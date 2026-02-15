@@ -1,0 +1,3714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🔍 МУЗЕЙНАЯ ТАЙНА | Расследование кражи</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --museum-gold: #d4af37;
+            --museum-dark: #0f0f0f;
+            --museum-red: #8b0000;
+            --museum-ink: #1a1a2e;
+            --museum-paper: #f5f5dc;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: var(--museum-dark);
+            color: #e8e6e3;
+            overflow-x: hidden;
+            touch-action: manipulation;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .font-title { font-family: 'Cinzel', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .bg-museum {
+            background-image: linear-gradient(rgba(15, 15, 26, 0.85), rgba(15, 15, 26, 0.9)), url('https://images.unsplash.com/photo-1603750003385-3342231a1ff1?fm=jpg&q=60&w=3000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+        }
+        
+        .case-file {
+            background: linear-gradient(145deg, #f5f5dc 0%, #e8e8d0 100%);
+            color: #1a1a2e;
+            border: 3px solid var(--museum-gold);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        
+        .case-file::before {
+            content: 'СОВЕРШЕННО СЕКРЕТНО';
+            position: absolute;
+            top: 25px;
+            right: -25px;
+            background: var(--museum-red);
+            color: white;
+            padding: 4px 30px;
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transform: rotate(45deg);
+            opacity: 0.8;
+            font-family: 'Cinzel', serif;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 200px;
+            text-overflow: ellipsis;
+        }
+        
+        .evidence-locked {
+            filter: grayscale(100%) brightness(0.4) contrast(1.2);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        .evidence-active {
+            animation: pulse-gold 2s infinite;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .evidence-active::after {
+            content: '▶ ОТКРЫТЬ';
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--museum-red);
+            color: white;
+            padding: 5px 15px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            animation: blink 1s infinite;
+            white-space: nowrap;
+            z-index: 5;
+        }
+        
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+            50% { box-shadow: 0 0 30px 10px rgba(212,175,55,0.2); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .word-grid-20x20 {
+            display: grid;
+            grid-template-columns: repeat(20, minmax(22px, 1fr));
+            gap: 1px;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #1a1a2e;
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid var(--museum-gold);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .grid-cell-20x20 {
+            aspect-ratio: 1;
+            background: #2a2a3e;
+            border: 1px solid var(--museum-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--museum-gold);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.15s;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .grid-cell-20x20.selected {
+            background: var(--museum-gold);
+            color: #1a1a2e;
+            transform: scale(1.1);
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(212,175,55,0.5);
+        }
+        
+        .grid-cell-20x20.in-word {
+            background: #4ade80;
+            color: #1a1a2e;
+            border-color: #22c55e;
+        }
+        
+        .word-line-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .word-line {
+            stroke: var(--museum-gold);
+            stroke-width: 3;
+            stroke-linecap: round;
+            fill: none;
+            filter: drop-shadow(0 0 3px rgba(212,175,55,0.8));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .word-line.show {
+            opacity: 1;
+        }
+        
+        .selected-word-20x20 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            letter-spacing: 4px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            min-height: 50px;
+            word-break: break-all;
+            color: var(--museum-gold);
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            max-width: 400px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--museum-gold);
+            position: relative;
+        }
+        
+        .grid-cell {
+            aspect-ratio: 1;
+            background: #2a2a3e;
+            border: 1px solid var(--museum-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--museum-gold);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .grid-cell.selected {
+            background: var(--museum-gold);
+            color: #1a1a2e;
+            transform: scale(1.05);
+        }
+        
+        .grid-cell.in-word {
+            background: #4ade80;
+            color: #1a1a2e;
+            border-color: #22c55e;
+        }
+        
+        .phase-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .phase-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            border: 2px solid var(--museum-gold);
+            color: var(--museum-gold);
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .phase-btn.active {
+            background: var(--museum-gold);
+            color: #1a1a2e;
+            transform: scale(1.1);
+        }
+        
+        .phase-btn.completed {
+            background: #4ade80;
+            border-color: #22c55e;
+            color: #1a1a2e;
+        }
+        
+        .phase-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .phase-btn.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            position: relative;
+        }
+        
+        .phase-btn.locked::after {
+            content: '🔒';
+            position: absolute;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .btn-detective {
+            background: linear-gradient(135deg, var(--museum-gold), #b8941f);
+            color: #1a1a2e;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .btn-detective:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .btn-detective:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+        }
+        
+        .btn-secondary-detective {
+            background: transparent;
+            color: var(--museum-gold);
+            border: 2px solid var(--museum-gold);
+            font-family: 'Cinzel', serif;
+            padding: 14px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-secondary-detective:hover {
+            background: var(--museum-gold);
+            color: #1a1a2e;
+        }
+        
+        .detective-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid var(--museum-gold);
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            width: 100%;
+            color: #1a1a2e;
+        }
+        
+        .team-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--museum-gold);
+            border-radius: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+        }
+        
+        .investigation-progress {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .investigation-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--museum-gold), var(--museum-red));
+            transition: width 0.5s ease;
+        }
+        
+        .modal-overlay {
+            background: rgba(15,15,26,0.98);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 200;
+        }
+        
+        .stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            border: 4px solid var(--museum-red);
+            color: var(--museum-red);
+            padding: 10px 20px;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 20px;
+            letter-spacing: 4px;
+            opacity: 0;
+            pointer-events: none;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(2px);
+            border-radius: 4px;
+            white-space: nowrap;
+            max-width: 90%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        
+        .stamp.show {
+            opacity: 0.85;
+            animation: stamp-in 0.4s ease-out;
+        }
+        
+        @keyframes stamp-in {
+            0% { transform: translate(-50%, -50%) rotate(-15deg) scale(2); opacity: 0; }
+            100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 0.85; }
+        }
+        
+        .conn-status {
+            position: fixed;
+            top: 10px; right: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+        }
+        
+        .conn-online { background: rgba(74,222,128,0.1); color: #4ade80; border-color: #4ade80; }
+        .conn-offline { background: rgba(248,113,113,0.1); color: #f87171; border-color: #f87171; }
+        .conn-connecting { background: rgba(251,191,36,0.1); color: #fbbf24; border-color: #fbbf24; }
+        
+        .riddle-box {
+            font-family: 'Crimson Text', serif;
+            font-size: 18px;
+            background: #f5f5dc;
+            color: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #d4af37;
+            font-style: italic;
+        }
+        
+        .player-role {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--museum-gold);
+            color: #1a1a2e;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .qr-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .qr-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid var(--museum-gold);
+            page-break-inside: avoid;
+        }
+        
+        .qr-code-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 10px;
+        }
+        
+        .qr-code-container img {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .scroll-container {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        
+        .card-completed {
+            opacity: 0.8;
+        }
+
+        #qr-reader {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid var(--museum-gold);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #qr-reader video {
+            width: 100%;
+            height: auto;
+        }
+
+        #qr-reader__scan_region {
+            background: white;
+        }
+
+        #qr-reader__dashboard {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        #qr-reader__dashboard button {
+            background: var(--museum-gold);
+            color: #1a1a2e;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        #qr-reader__status_span {
+            color: var(--museum-gold);
+        }
+
+        #qr-reader__header_message {
+            color: var(--museum-gold);
+        }
+
+        .anagram-tile {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, #d4af37, #b8941f);
+            border: 2px solid #1a1a2e;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a1a2e;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .anagram-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212,175,55,0.4);
+        }
+
+        .anagram-tile.used {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        .anagram-tile.selected {
+            background: #4ade80;
+            border-color: #22c55e;
+        }
+
+        .hidden-answer {
+            filter: blur(8px);
+            user-select: none;
+            pointer-events: none;
+            opacity: 0.5;
+            transition: filter 0.3s;
+        }
+
+        .hidden-answer.revealed {
+            filter: blur(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .puzzle-piece {
+            width: 80px;
+            height: 80px;
+            background: #1a1a2e;
+            border: 3px solid var(--museum-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--museum-gold);
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin: 0 auto;
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 640px) {
+            .word-grid-20x20 {
+                grid-template-columns: repeat(20, minmax(16px, 1fr));
+                gap: 0.5px;
+                padding: 4px;
+            }
+            
+            .grid-cell-20x20 {
+                font-size: 9px;
+            }
+            
+            .selected-word-20x20 {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-museum" id="body-bg">
+
+    <div id="conn-status" class="conn-status conn-connecting">⚡ ПОДКЛЮЧЕНИЕ...</div>
+
+    <!-- MODE SELECT -->
+    <div id="mode-select" class="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
+        <div class="text-center mb-12">
+            <div class="mb-6">
+                <svg width="120" height="120" viewBox="0 0 120 120" class="mx-auto">
+                    <circle cx="60" cy="60" r="55" fill="none" stroke="#d4af37" stroke-width="3"/>
+                    <path d="M60,20 L60,60 L85,85" fill="none" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="60" cy="60" r="8" fill="#d4af37"/>
+                    <rect x="35" y="35" width="50" height="50" fill="none" stroke="#8b0000" stroke-width="2" transform="rotate(15 60 60)"/>
+                </svg>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-title font-black mb-4 text-[#d4af37] tracking-widest">
+                МУЗЕЙНАЯ<br>ТАЙНА
+            </h1>
+            <p class="text-xl text-gray-400 italic mb-2">"Кража века в Галерее Искусств"</p>
+            <div class="w-32 h-1 bg-[#d4af37] mx-auto mt-6"></div>
+        </div>
+        
+        <div class="w-full max-w-lg bg-black/40 backdrop-blur rounded-lg p-8 border border-[#d4af37]/30 mb-8">
+            <div class="text-sm text-[#d4af37] mb-4 flex items-center gap-2 font-mono uppercase tracking-widest">
+                <span>⚙️</span> Настройка связи:
+            </div>
+            <textarea id="fb-config" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'
+                      class="w-full h-32 bg-black/60 rounded p-4 text-xs font-mono text-[#4ade80] border border-[#d4af37]/30 focus:border-[#d4af37] focus:outline-none resize-none"></textarea>
+            <button onclick="saveConfig()" class="mt-4 w-full btn-detective">
+                📡 УСТАНОВИТЬ СВЯЗЬ
+            </button>
+            <div id="config-ok" class="hidden mt-3 text-center text-[#4ade80] text-sm font-mono">✅ Связь установлена</div>
+        </div>
+        
+        <div class="w-full max-w-md space-y-4">
+            <button onclick="startMode('teacher')" class="w-full group relative overflow-hidden bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] rounded-lg p-8 border-2 border-[#d4af37]/50 transition-all hover:border-[#d4af37]">
+                <div class="relative flex items-center gap-6">
+                    <div class="text-5xl">🕵️</div>
+                    <div class="text-left">
+                        <div class="text-2xl font-title font-bold text-[#d4af37] mb-1">ГЛАВНЫЙ СЛЕДОВАТЕЛЬ</div>
+                        <div class="text-sm text-gray-400">Управление расследованием</div>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="startMode('team')" class="w-full group relative overflow-hidden bg-gradient-to-br from-[#2e1616] to-[#1a0a0a] rounded-lg p-8 border-2 border-[#d4af37]/50 transition-all hover:border-[#d4af37]">
+                <div class="relative flex items-center gap-6">
+                    <div class="text-5xl">👮</div>
+                    <div class="text-left">
+                        <div class="text-2xl font-title font-bold text-[#d4af37] mb-1">ОПЕРАТИВНАЯ ГРУППА</div>
+                        <div class="text-sm text-gray-400">4 агента • 1 дело</div>
+                    </div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- TEACHER PANEL -->
+    <div id="teacher-panel" class="hidden min-h-screen p-4 pb-32 relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-8 border-b border-[#d4af37]/30 pb-4">
+                <div class="flex items-center gap-4">
+                    <div class="text-4xl">🕵️</div>
+                    <div>
+                        <h2 class="text-3xl font-title font-bold text-[#d4af37]">ЦЕНТР УПРАВЛЕНИЯ</h2>
+                        <p class="text-sm text-gray-400 font-mono">Дело: Кража артефакта</p>
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="btn-secondary-detective text-sm">
+                    ЗАКРЫТЬ ДЕЛО
+                </button>
+            </div>
+            
+            <div class="case-file rounded-lg p-8 mb-8 relative">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div class="text-xs font-bold text-[#8b0000] uppercase tracking-widest mb-2">Номер дела</div>
+                        <div class="text-6xl font-mono font-bold text-[#1a1a2e] tracking-widest mb-4" id="room-code">----</div>
+                        <div class="flex gap-3">
+                            <button onclick="createRoom()" class="flex-1 bg-[#1a1a2e] text-[#d4af37] py-3 rounded font-bold text-sm hover:bg-[#2a2a3e] transition">
+                                📝 НОВОЕ ДЕЛО
+                            </button>
+                            <button onclick="deleteRoom()" class="flex-1 bg-[#8b0000] text-white py-3 rounded font-bold text-sm hover:bg-[#a03040] transition">
+                                🗑️ УДАЛИТЬ
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-[#1a1a2e]/5 p-4 rounded border border-[#1a1a2e]/10">
+                            <div class="text-xs text-[#1a1a2e]/60 uppercase mb-1">Групп в деле</div>
+                            <div class="text-3xl font-bold text-[#1a1a2e]" id="stat-teams">0</div>
+                        </div>
+                        <div class="bg-[#1a1a2e]/5 p-4 rounded border border-[#1a1a2e]/10">
+                            <div class="text-xs text-[#1a1a2e]/60 uppercase mb-1">Этап расследования</div>
+                            <div class="text-3xl font-bold text-[#1a1a2e]" id="stat-phase">0/5</div>
+                        </div>
+                        <div class="bg-[#1a1a2e]/5 p-4 rounded border border-[#1a1a2e]/10">
+                            <div class="text-xs text-[#1a1a2e]/60 uppercase mb-1">Время до окончания</div>
+                            <div class="text-3xl font-mono font-bold text-[#8b0000]" id="stat-time">20:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="startGame()" id="btn-start" class="w-full mb-8 btn-detective opacity-50 cursor-not-allowed" disabled>
+                🔍 НАЧАТЬ РАССЛЕДОВАНИЕ
+            </button>
+            
+            <div class="bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-title font-bold text-[#d4af37]">Оперативные группы</h3>
+                    <span class="flex items-center gap-2 text-xs text-[#4ade80] font-mono">
+                        <span class="w-2 h-2 bg-[#4ade80] rounded-full animate-pulse"></span> LIVE
+                    </span>
+                </div>
+                <div id="teams-list" class="space-y-3">
+                    <div class="text-center text-gray-500 py-8 italic">Ожидание подключения групп...</div>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                <div class="text-sm text-[#d4af37] mb-4 font-mono uppercase tracking-widest">Принудительный переход:</div>
+                <div class="grid grid-cols-5 gap-3">
+                    <button onclick="forcePhase(1)" class="bg-[#1a1a2e] border border-[#d4af37]/50 text-[#d4af37] py-4 rounded font-bold hover:bg-[#d4af37] hover:text-[#1a1a2e] transition">I</button>
+                    <button onclick="forcePhase(2)" class="bg-[#1a1a2e] border border-[#d4af37]/50 text-[#d4af37] py-4 rounded font-bold hover:bg-[#d4af37] hover:text-[#1a1a2e] transition">II</button>
+                    <button onclick="forcePhase(3)" class="bg-[#1a1a2e] border border-[#d4af37]/50 text-[#d4af37] py-4 rounded font-bold hover:bg-[#d4af37] hover:text-[#1a1a2e] transition">III</button>
+                    <button onclick="forcePhase(4)" class="bg-[#1a1a2e] border border-[#d4af37]/50 text-[#d4af37] py-4 rounded font-bold hover:bg-[#d4af37] hover:text-[#1a1a2e] transition">IV</button>
+                    <button onclick="forcePhase(5)" class="bg-[#1a1a2e] border border-[#d4af37]/50 text-[#d4af37] py-4 rounded font-bold hover:bg-[#d4af37] hover:text-[#1a1a2e] transition">V</button>
+                </div>
+            </div>
+
+            <!-- QR Codes Section -->
+            <div class="mt-8 bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-title font-bold text-[#d4af37]">QR-коды для печати</h3>
+                    <button onclick="printQRCodes()" class="btn-secondary-detective text-sm">🖨️ ПЕЧАТЬ</button>
+                </div>
+                <div id="qr-codes-container" class="qr-display">
+                    <!-- QR codes will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEAM PANEL -->
+    <div id="team-panel" class="hidden min-h-screen flex flex-col relative z-10">
+        
+        <!-- CONNECT -->
+        <div id="team-connect" class="flex-1 flex flex-col items-center justify-center p-4">
+            <div class="w-full max-w-lg">
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-[#d4af37] flex items-center justify-center bg-[#1a1a2e]">
+                        <span class="text-5xl">🎭</span>
+                    </div>
+                    <h2 class="text-4xl font-title font-bold text-[#d4af37] mb-2">ДОПУСК К ДЕЛУ</h2>
+                    <p class="text-gray-400 italic">Предъявите ваши полномочия</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                        <label class="text-sm text-[#d4af37] mb-3 block font-mono uppercase tracking-widest">Номер дела</label>
+                        <input type="text" id="join-code" maxlength="4" placeholder="0000"
+                               class="w-full bg-black/50 border-2 border-[#d4af37]/50 rounded-xl p-4 text-center text-4xl font-mono tracking-[0.5em] text-[#d4af37] focus:border-[#d4af37] focus:outline-none">
+                    </div>
+                    
+                    <div class="bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                        <label class="text-sm text-[#d4af37] mb-4 block font-mono uppercase tracking-widest">Выберите группу</label>
+                        <div class="grid grid-cols-5 gap-3">
+                            <button onclick="selectTeam(1)" class="team-btn p-4 rounded border-2 border-[#d4af37]/30 hover:border-[#ff6b6b] hover:bg-[#ff6b6b]/10 text-[#ff6b6b] transition" data-t="1">
+                                <div class="text-2xl mb-1">🦅</div>
+                                <div class="text-xs font-bold">ALFA</div>
+                            </button>
+                            <button onclick="selectTeam(2)" class="team-btn p-4 rounded border-2 border-[#d4af37]/30 hover:border-[#4ecdc4] hover:bg-[#4ecdc4]/10 text-[#4ecdc4] transition" data-t="2">
+                                <div class="text-2xl mb-1">🐉</div>
+                                <div class="text-xs font-bold">BRAVO</div>
+                            </button>
+                            <button onclick="selectTeam(3)" class="team-btn p-4 rounded border-2 border-[#d4af37]/30 hover:border-[#ffe66d] hover:bg-[#ffe66d]/10 text-[#ffe66d] transition" data-t="3">
+                                <div class="text-2xl mb-1">🦁</div>
+                                <div class="text-xs font-bold">CHARLIE</div>
+                            </button>
+                            <button onclick="selectTeam(4)" class="team-btn p-4 rounded border-2 border-[#d4af37]/30 hover:border-[#a8e6cf] hover:bg-[#a8e6cf]/10 text-[#a8e6cf] transition" data-t="4">
+                                <div class="text-2xl mb-1">🦊</div>
+                                <div class="text-xs font-bold">DELTA</div>
+                            </button>
+                            <button onclick="selectTeam(5)" class="team-btn p-4 rounded border-2 border-[#d4af37]/30 hover:border-[#ff8b94] hover:bg-[#ff8b94]/10 text-[#ff8b94] transition" data-t="5">
+                                <div class="text-2xl mb-1">🐺</div>
+                                <div class="text-xs font-bold">ECHO</div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/40 rounded-lg p-6 border border-[#d4af37]/30">
+                        <label class="text-sm text-[#d4af37] mb-4 block font-mono uppercase tracking-widest">Состав группы (4 агента)</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="p1" placeholder="Агент 1 (Аналитик)" class="w-full bg-black/50 border border-[#d4af37]/30 rounded-lg p-3 text-[#d4af37] focus:border-[#d4af37] focus:outline-none">
+                            <input type="text" id="p2" placeholder="Агент 2 (Техник)" class="w-full bg-black/50 border border-[#d4af37]/30 rounded-lg p-3 text-[#d4af37] focus:border-[#d4af37] focus:outline-none">
+                            <input type="text" id="p3" placeholder="Агент 3 (Полевой)" class="w-full bg-black/50 border border-[#d4af37]/30 rounded-lg p-3 text-[#d4af37] focus:border-[#d4af37] focus:outline-none">
+                            <input type="text" id="p4" placeholder="Агент 4 (Криптограф)" class="w-full bg-black/50 border border-[#d4af37]/30 rounded-lg p-3 text-[#d4af37] focus:border-[#d4af37] focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <button onclick="joinGame()" class="w-full btn-detective text-lg">
+                        🔐 ПОЛУЧИТЬ ДОПУСК
+                    </button>
+                    
+                    <div id="join-err" class="hidden text-center text-[#ff6b6b] text-sm bg-[#ff6b6b]/10 p-4 rounded border border-[#ff6b6b]/30"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WAIT -->
+        <div id="team-wait" class="hidden flex-1 flex flex-col items-center justify-center p-4">
+            <div class="text-center max-w-md">
+                <div class="relative mb-8">
+                    <div class="w-32 h-32 mx-auto rounded-full border-4 border-[#d4af37] p-2 animate-pulse">
+                        <div class="w-full h-full rounded-full bg-[#d4af37]/20 flex items-center justify-center">
+                            <span class="text-6xl">⏳</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 class="text-3xl font-title font-bold text-[#d4af37] mb-4">ОЖИДАНИЕ ДОПУСКА</h2>
+                
+                <div class="bg-black/60 rounded-lg p-6 border border-[#d4af37]/30 mb-6">
+                    <div class="team-badge mb-4 mx-auto">
+                        <span id="wait-team-emoji">🦅</span>
+                        <span id="wait-team-name" class="font-bold"></span>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-3 uppercase tracking-widest">Группа готова</div>
+                    <div id="wait-players" class="space-y-2 text-left text-sm"></div>
+                </div>
+                
+                <div class="flex items-center justify-center gap-2 text-[#d4af37] text-sm font-mono">
+                    <span class="w-2 h-2 bg-[#4ade80] rounded-full animate-pulse"></span>
+                    Ожидание приказа из Центра...
+                </div>
+            </div>
+        </div>
+        
+        <!-- GAME -->
+        <div id="team-game" class="hidden flex-1 flex flex-col">
+            <div class="bg-black/80 backdrop-blur border-b-2 border-[#d4af37]/50 p-4 sticky-header">
+                <div class="max-w-4xl mx-auto flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-[#d4af37] font-mono uppercase mb-1">Оперативная группа</div>
+                        <div id="game-team-name" class="text-xl font-title font-bold text-[#d4af37]">---</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-[#d4af37] font-mono uppercase mb-1">Этап</div>
+                        <div id="game-phase-num" class="text-3xl font-bold font-title">I</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-[#d4af37] font-mono uppercase mb-1">Время</div>
+                        <div id="game-timer" class="text-xl font-mono text-[#ff6b6b] bg-black/50 px-4 py-2 rounded border border-[#d4af37]/30">20:00</div>
+                    </div>
+                </div>
+                <div class="investigation-progress max-w-4xl mx-auto mt-4">
+                    <div class="investigation-progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="text-center py-6">
+                <div id="phase-icon" class="text-5xl mb-4 inline-block">🏛️</div>
+                <h3 id="phase-title" class="text-2xl font-title font-bold text-[#d4af37] uppercase tracking-widest mb-2">ЗАЛ ИСКУССТВ</h3>
+                <p id="phase-subtitle" class="text-gray-400 italic max-w-xl mx-auto px-4">Поиск первых улик...</p>
+            </div>
+            
+            <!-- Phase Navigation -->
+            <div class="phase-nav">
+                <button class="phase-btn" id="phase1-btn" onclick="switchPhase(1)">1</button>
+                <button class="phase-btn" id="phase2-btn" onclick="switchPhase(2)">2</button>
+                <button class="phase-btn" id="phase3-btn" onclick="switchPhase(3)">3</button>
+                <button class="phase-btn" id="phase4-btn" onclick="switchPhase(4)">4</button>
+                <button class="phase-btn locked" id="phase5-btn" onclick="switchPhase(5)" title="Сначала пройдите все этапы 1-4">5</button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 pb-32 max-w-4xl mx-auto w-full" id="cards-container"></div>
+        </div>
+    </div>
+
+    <!-- QR SCANNER MODAL -->
+    <div id="qr-modal" class="hidden fixed inset-0 modal-overlay z-[200] flex flex-col">
+        <div class="p-6 flex justify-between items-center border-b border-[#d4af37]/30">
+            <h3 class="text-lg font-title font-bold text-[#d4af37]">📷 Сканер улик</h3>
+            <button onclick="closeQR()" class="text-[#d4af37] text-2xl hover:text-white transition">✕</button>
+        </div>
+        <div class="flex-1 flex items-center justify-center p-4">
+            <div id="qr-reader" class="w-full max-w-sm"></div>
+        </div>
+        <div id="qr-scanner-status" class="p-4 text-center text-gray-400 text-sm italic">
+            Наведите камеру на QR-код улики
+        </div>
+        <div class="p-4 flex justify-center gap-4">
+            <button onclick="closeQR()" class="btn-secondary-detective text-sm">ОТМЕНА</button>
+        </div>
+    </div>
+
+    <!-- VICTORY -->
+    <div id="victory-modal" class="hidden fixed inset-0 modal-overlay z-[300] flex items-center justify-center p-4">
+        <div class="text-center max-w-2xl w-full">
+            <div class="text-8xl mb-6">🏆</div>
+            <h2 class="text-5xl font-title font-bold text-[#d4af37] mb-4">ДЕЛО РАСКРЫТО!</h2>
+            <p class="text-xl text-gray-300 mb-6">Артефакт возвращён в музей</p>
+            
+            <div class="case-file rounded-lg p-8 mb-8 text-left">
+                <div class="text-center mb-6">
+                    <p class="text-lg text-[#1a1a2e]/70 mb-2">Оперативная группа</p>
+                    <div id="vic-team" class="text-3xl font-title font-bold text-[#1a1a2e] mb-4"></div>
+                </div>
+                
+                <div class="bg-[#1a1a2e]/5 p-6 rounded border-2 border-[#d4af37] text-center">
+                    <p class="text-sm text-[#1a1a2e]/60 uppercase tracking-widest mb-2">Кодовое слово</p>
+                    <div id="vic-word" class="text-4xl font-mono font-bold text-[#8b0000] tracking-[0.3em]"></div>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="btn-detective text-lg px-12">
+                НОВОЕ РАССЛЕДОВАНИЕ
+            </button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ==================== FIREBASE ====================
+        let firebaseConfig = null;
+        let db = null;
+        let gameRef = null;
+        let globalTimerInterval = null;
+        let localTimerInterval = null;
+        let lastTimerUpdate = Date.now();
+        let localTimeLeft = 1200; // 20 минут локально - независимый таймер
+        let gameStartTime = null; // Время начала игры
+        
+        const saved = localStorage.getItem('fb_config');
+        if (saved) {
+            try {
+                firebaseConfig = JSON.parse(saved);
+                document.getElementById('fb-config').value = saved;
+            } catch(e) {}
+        }
+        
+        function saveConfig() {
+            try {
+                const cfg = JSON.parse(document.getElementById('fb-config').value.trim());
+                if (cfg.apiKey && cfg.databaseURL) {
+                    localStorage.setItem('fb_config', JSON.stringify(cfg));
+                    firebaseConfig = cfg;
+                    document.getElementById('config-ok').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('config-ok').classList.add('hidden'), 3000);
+                }
+            } catch(e) {
+                alert('Ошибка в конфигурации!');
+            }
+        }
+        
+        function initFB() {
+            if (!firebaseConfig) {
+                alert('Введите Firebase конфигурацию!');
+                return false;
+            }
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.database();
+                db.goOffline();
+                db.goOnline();
+                updateConn('⚡ ОНЛАЙН', 'conn-online');
+                return true;
+            } catch(e) {
+                updateConn('⚠ ОШИБКА', 'conn-offline');
+                return false;
+            }
+        }
+        
+        function updateConn(text, cls) {
+            const el = document.getElementById('conn-status');
+            el.textContent = text;
+            el.className = 'conn-status ' + cls;
+        }
+
+        // ==================== DATA - MUSEUM THEFT ====================
+        
+        const TEAMS = [
+            {
+                id: 1,
+                name: 'ALFA',
+                emoji: '🦅',
+                color: '#ff6b6b',
+                anagram: 'ДРУЖБА',
+                letters: 'ДРУЖБА',
+                hint: 'То, что связывает команду воедино'
+            },
+            {
+                id: 2,
+                name: 'BRAVO',
+                emoji: '🐉',
+                color: '#4ecdc4',
+                anagram: 'ТОВАРИЩ',
+                letters: 'ТОВАРИЩ',
+                hint: 'Близкий друг и соратник'
+            },
+            {
+                id: 3,
+                name: 'CHARLIE',
+                emoji: '🦁',
+                color: '#ffe66d',
+                anagram: 'ЕДИНСТВО',
+                letters: 'ЕДИНСТВО',
+                hint: 'Союз, сплоченность'
+            },
+            {
+                id: 4,
+                name: 'DELTA',
+                emoji: '🦊',
+                color: '#a8e6cf',
+                anagram: 'СОДРУЖЕСТВО',
+                letters: 'СОДРУЖЕСТВО',
+                hint: 'Дружеские отношения между людьми'
+            },
+            {
+                id: 5,
+                name: 'ECHO',
+                emoji: '🐺',
+                color: '#ff8b94',
+                anagram: 'БРАТСТВО',
+                letters: 'БРАТСТВО',
+                hint: 'Крепкая связь как у братьев'
+            }
+        ];
+        
+        const CHAPTERS = [
+            { id: 1, title: 'ЗАЛ ИСКУССТВ', subtitle: 'Первые улики на месте происшествия', icon: '🏛️', theme: 'bg-museum' },
+            { id: 2, title: 'СЛУЖБА БЕЗОПАСНОСТИ', subtitle: 'Изучение записей камер', icon: '📹', theme: 'bg-museum' },
+            { id: 3, title: 'ГАЛЕРЕЯ ЭКСПОНАТОВ', subtitle: 'Поиск спрятанных сообщений', icon: '🖼️', theme: 'bg-museum' },
+            { id: 4, title: 'ПОДВАЛЬНЫЕ ПОМЕЩЕНИЯ', subtitle: 'Секретные ходы музея', icon: '🗝️', theme: 'bg-museum' },
+            { id: 5, title: 'СЕЙФ ХРАНИТЕЛЯ', subtitle: 'Финальный код доступа', icon: '🔐', theme: 'bg-museum' }
+        ];
+        
+        // Генерация уникальных уравнений для каждой команды
+        function generateEquations(teamId) {
+            const baseEquations = [
+                // Команда 1 - ALFA
+                [
+                    { eq: '2x + 5 = 25', ans: 10 },
+                    { eq: '3x - 7 = 14', ans: 7 },
+                    { eq: '4x + 8 = 32', ans: 6 },
+                    { eq: '5x - 3 = 27', ans: 6 }
+                ],
+                // Команда 2 - BRAVO
+                [
+                    { eq: 'x + 15 = 42', ans: 27 },
+                    { eq: '2x - 9 = 31', ans: 20 },
+                    { eq: '3x + 12 = 48', ans: 12 },
+                    { eq: '4x - 16 = 24', ans: 10 }
+                ],
+                // Команда 3 - CHARLIE
+                [
+                    { eq: '6 + 2x = 24', ans: 9 },
+                    { eq: '8x - 5 = 35', ans: 5 },
+                    { eq: '3x + 7 = 28', ans: 7 },
+                    { eq: '5x - 8 = 17', ans: 5 }
+                ],
+                // Команда 4 - DELTA
+                [
+                    { eq: '7x + 3 = 31', ans: 4 },
+                    { eq: '2x - 11 = 9', ans: 10 },
+                    { eq: '9x + 6 = 42', ans: 4 },
+                    { eq: '4x - 7 = 25', ans: 8 }
+                ],
+                // Команда 5 - ECHO
+                [
+                    { eq: 'x - 8 = 19', ans: 27 },
+                    { eq: '3x + 14 = 41', ans: 9 },
+                    { eq: '6x - 13 = 29', ans: 7 },
+                    { eq: '2x + 18 = 46', ans: 14 }
+                ]
+            ];
+            return baseEquations[teamId - 1] || baseEquations[0];
+        }
+
+        // Генерация сетки 20x20 для поиска слов (диагональ)
+        function generateWordSearch20x20(teamId) {
+            const wordGrids = {
+                1: { // ALFA - слово "ДРУЖБА" по диагонали вниз-вправо
+                    grid: generateRandomGrid(20, 20, 'ДРУЖБА', 5, 5, 'down-right'),
+                    word: 'ДРУЖБА',
+                    startRow: 5,
+                    startCol: 5,
+                    direction: 'down-right'
+                },
+                2: { // BRAVO - слово "ТОВАРИЩ" по диагонали вниз-влево
+                    grid: generateRandomGrid(20, 20, 'ТОВАРИЩ', 3, 15, 'down-left'),
+                    word: 'ТОВАРИЩ',
+                    startRow: 3,
+                    startCol: 15,
+                    direction: 'down-left'
+                },
+                3: { // CHARLIE - слово "ЕДИНСТВО" по диагонали вверх-вправо
+                    grid: generateRandomGrid(20, 20, 'ЕДИНСТВО', 12, 3, 'up-right'),
+                    word: 'ЕДИНСТВО',
+                    startRow: 12,
+                    startCol: 3,
+                    direction: 'up-right'
+                },
+                4: { // DELTA - слово "СОДРУЖЕСТВО" по диагонали вверх-влево
+                    grid: generateRandomGrid(20, 20, 'СОДРУЖЕСТВО', 18, 16, 'up-left'),
+                    word: 'СОДРУЖЕСТВО',
+                    startRow: 18,
+                    startCol: 16,
+                    direction: 'up-left'
+                },
+                5: { // ECHO - слово "БРАТСТВО" по диагонали вниз-вправо
+                    grid: generateRandomGrid(20, 20, 'БРАТСТВО', 8, 8, 'down-right'),
+                    word: 'БРАТСТВО',
+                    startRow: 8,
+                    startCol: 8,
+                    direction: 'down-right'
+                }
+            };
+            return wordGrids[teamId] || wordGrids[1];
+        }
+
+        function generateRandomGrid(rows, cols, word, startRow, startCol, direction) {
+            const letters = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+            const grid = [];
+            
+            // Создаем пустую сетку
+            for (let i = 0; i < rows; i++) {
+                grid[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    grid[i][j] = letters[Math.floor(Math.random() * letters.length)];
+                }
+            }
+            
+            // Размещаем слово по диагонали
+            const wordLetters = word.split('');
+            let row = startRow;
+            let col = startCol;
+            
+            for (let i = 0; i < wordLetters.length; i++) {
+                if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                    grid[row][col] = wordLetters[i];
+                }
+                
+                // Двигаемся в зависимости от направления
+                switch(direction) {
+                    case 'down-right':
+                        row++;
+                        col++;
+                        break;
+                    case 'down-left':
+                        row++;
+                        col--;
+                        break;
+                    case 'up-right':
+                        row--;
+                        col++;
+                        break;
+                    case 'up-left':
+                        row--;
+                        col--;
+                        break;
+                }
+            }
+            
+            return grid;
+        }
+
+        // Генерация сетки 7x7 для первого этапа
+        function generateWordSearch(teamId) {
+            const wordGrids = {
+                1: { // ALFA - слово "ДРУЖБА"
+                    grid: [
+                        ['Д', 'Р', 'У', 'Ж', 'Б', 'А', 'М'],
+                        ['О', 'Л', 'Е', 'К', 'С', 'Т', 'Р'],
+                        ['П', 'У', 'С', 'Т', 'О', 'Й', 'З'],
+                        ['Н', 'В', 'Г', 'Д', 'Ы', 'М', 'Ч'],
+                        ['С', 'Я', 'Т', 'Ь', 'Ф', 'Ц', 'Э'],
+                        ['Ю', 'Й', 'И', 'К', 'Л', 'М', 'Н'],
+                        ['Х', 'Ъ', 'Щ', 'Ш', 'П', 'Р', 'О']
+                    ],
+                    word: 'ДРУЖБА',
+                    positions: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5]]
+                },
+                2: { // BRAVO - слово "ТОВАРИЩ"
+                    grid: [
+                        ['Т', 'О', 'В', 'А', 'Р', 'И', 'Щ'],
+                        ['К', 'Л', 'М', 'Н', 'П', 'С', 'Т'],
+                        ['У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Ы'],
+                        ['Ь', 'Э', 'Ю', 'Я', 'Й', 'Ъ', 'Ё'],
+                        ['Ж', 'З', 'И', 'К', 'Л', 'М', 'Н'],
+                        ['О', 'П', 'Р', 'С', 'Т', 'У', 'Ф'],
+                        ['Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Ь']
+                    ],
+                    word: 'ТОВАРИЩ',
+                    positions: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6]]
+                },
+                3: { // CHARLIE - слово "ЕДИНСТВО"
+                    grid: [
+                        ['Е', 'Д', 'И', 'Н', 'С', 'Т', 'В'],
+                        ['О', 'П', 'Р', 'С', 'Т', 'У', 'Ф'],
+                        ['Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Ь'],
+                        ['Э', 'Ю', 'Я', 'Й', 'Ъ', 'Ё', 'Ж'],
+                        ['З', 'И', 'К', 'Л', 'М', 'Н', 'О'],
+                        ['П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х'],
+                        ['Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Ь', 'Э']
+                    ],
+                    word: 'ЕДИНСТВО',
+                    positions: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6]]
+                },
+                4: { // DELTA - слово "СОДРУЖЕСТВО"
+                    grid: [
+                        ['С', 'О', 'Д', 'Р', 'У', 'Ж', 'Е'],
+                        ['С', 'Т', 'В', 'О', 'П', 'Р', 'С'],
+                        ['Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш'],
+                        ['Щ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', 'Й'],
+                        ['Ъ', 'Ё', 'Ж', 'З', 'И', 'К', 'Л'],
+                        ['М', 'Н', 'О', 'П', 'Р', 'С', 'Т'],
+                        ['У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ']
+                    ],
+                    word: 'СОДРУЖЕСТВО',
+                    positions: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,0], [1,1], [1,2], [1,3]]
+                },
+                5: { // ECHO - слово "БРАТСТВО"
+                    grid: [
+                        ['Б', 'Р', 'А', 'Т', 'С', 'Т', 'В'],
+                        ['О', 'П', 'Р', 'С', 'Т', 'У', 'Ф'],
+                        ['Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Ь'],
+                        ['Э', 'Ю', 'Я', 'Й', 'Ъ', 'Ё', 'Ж'],
+                        ['З', 'И', 'К', 'Л', 'М', 'Н', 'О'],
+                        ['П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х'],
+                        ['Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Ь', 'Э']
+                    ],
+                    word: 'БРАТСТВО',
+                    positions: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,5]]
+                }
+            };
+            return wordGrids[teamId] || wordGrids[1];
+        }
+        
+        const EVIDENCE = {
+            // ЭТАП 1: ЗАЛ ИСКУССТВ
+            chapter1: {
+                ALFA: [
+                    {
+                        id: 'c1a1',
+                        type: 'riddle',
+                        title: 'ЗАГАДКА СТАРОГО ХРАНИТЕЛЯ',
+                        description: 'Агент 1: Решите загадку, чтобы найти первую подсказку.',
+                        riddle: 'Я без рук, но могу ударить. Я без ног, но могу бежать. Я без глаз, но могу плакать. Что я?',
+                        checkAnswer: (val) => ['ВОДА', 'ВОДА', 'ВОДА'].includes(val.toUpperCase()),
+                        hint: 'Это может падать с неба и течь в реках',
+                        player: 1
+                    },
+                    {
+                        id: 'c1a2',
+                        type: 'team_equations',
+                        title: 'МАТЕМАТИЧЕСКИЙ КОД',
+                        description: 'Каждый агент решает своё уравнение. Соедините ответы в код.',
+                        teamId: 1,
+                        checkAnswer: (val) => val === '10766',
+                        hint: 'Запишите ответы по порядку агентов: 1-2-3-4'
+                    },
+                    {
+                        id: 'c1a3',
+                        type: 'scan',
+                        title: 'СКРЫТАЯ ЗАПИСКА',
+                        description: 'Найдите QR-код под вазой у входа',
+                        code: 'ALFA_NOTE_1',
+                        hint: 'Найдите QR-код под вазой у входа',
+                        checkAnswer: (val) => val === 'ALFA_NOTE_1'
+                    },
+                    {
+                        id: 'c1a4',
+                        type: 'wordsearch', // Сетка 7x7 для первого этапа
+                        title: 'СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 7x7, соединяя буквы по порядку',
+                        hint: 'Ищите слово по горизонтали',
+                        teamId: 1,
+                        checkAnswer: (val) => val === 'ДРУЖБА'
+                    },
+                    {
+                        id: 'c1a5',
+                        type: 'cipher',
+                        title: 'ШИФР ЦЕЗАРЯ',
+                        description: 'Расшифруйте сообщение: КДОРП (сдвиг +1)',
+                        checkAnswer: (val) => val.toUpperCase() === 'ЛЕПСТ',
+                        hint: 'Каждая буква сдвинута на 1 вперёд в алфавите'
+                    }
+                ],
+                BRAVO: [
+                    {
+                        id: 'c1b1',
+                        type: 'riddle',
+                        title: 'ЗАГАДКА ДОРИЙСКОЙ КОЛОННЫ',
+                        description: 'Агент 2: Что это за предмет?',
+                        riddle: 'У меня есть горло, но я не могу глотать. У меня есть спина, но я не могу лежать. Что я?',
+                        checkAnswer: (val) => ['БУТЫЛКА', 'БУТЫЛКА', 'ФЛЯГА'].includes(val.toUpperCase()),
+                        hint: 'В этом хранят жидкость',
+                        player: 2
+                    },
+                    {
+                        id: 'c1b2',
+                        type: 'team_equations',
+                        title: 'МАТЕМАТИЧЕСКИЙ КОД',
+                        description: 'Каждый агент решает своё уравнение. Соедините ответы в код.',
+                        teamId: 2,
+                        checkAnswer: (val) => val === '27201210',
+                        hint: 'Запишите ответы по порядку агентов: 1-2-3-4'
+                    },
+                    {
+                        id: 'c1b3',
+                        type: 'scan',
+                        title: 'ТАЙНИК У КОЛОННЫ',
+                        description: 'QR-код на древней колонне',
+                        code: 'BRAVO_COL_1',
+                        hint: 'QR-код на древней колонне',
+                        checkAnswer: (val) => val === 'BRAVO_COL_1'
+                    },
+                    {
+                        id: 'c1b4',
+                        type: 'wordsearch',
+                        title: 'СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 7x7, соединяя буквы по порядку',
+                        hint: 'Ищите слово по горизонтали',
+                        teamId: 2,
+                        checkAnswer: (val) => val === 'ТОВАРИЩ'
+                    },
+                    {
+                        id: 'c1b5',
+                        type: 'cipher',
+                        title: 'АТБАШ',
+                        description: 'Расшифруйте: ГСЛИВ (Атбаш)',
+                        checkAnswer: (val) => val.toUpperCase() === 'ТОРПЕ',
+                        hint: 'А ↔ Я, Б ↔ Ю, В ↔ Э...'
+                    }
+                ],
+                CHARLIE: [
+                    {
+                        id: 'c1c1',
+                        type: 'riddle',
+                        title: 'ЗАГАДКА СФИНКСА',
+                        description: 'Агенты 1 и 2: Что это за существо?',
+                        riddle: 'Утром на четырёх, днём на двух, вечером на трёх. Что это?',
+                        checkAnswer: (val) => ['ЧЕЛОВЕК', 'ЧЕЛОВЕК'].includes(val.toUpperCase()),
+                        hint: 'Думаю о жизненном пути человека',
+                        players: [1, 2]
+                    },
+                    {
+                        id: 'c1c2',
+                        type: 'team_equations',
+                        title: 'МАТЕМАТИЧЕСКИЙ КОД',
+                        description: 'Каждый агент решает своё уравнение. Соедините ответы в код.',
+                        teamId: 3,
+                        checkAnswer: (val) => val === '9575',
+                        hint: 'Запишите ответы по порядку агентов: 1-2-3-4'
+                    },
+                    {
+                        id: 'c1c3',
+                        type: 'scan',
+                        title: 'СКРЫТАЯ КАМЕРА',
+                        description: 'На статуе сфинкса',
+                        code: 'CHARLIE_CAM_1',
+                        hint: 'На статуе сфинкса',
+                        checkAnswer: (val) => val === 'CHARLIE_CAM_1'
+                    },
+                    {
+                        id: 'c1c4',
+                        type: 'wordsearch',
+                        title: 'СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 7x7, соединяя буквы по порядку',
+                        hint: 'Ищите слово по горизонтали',
+                        teamId: 3,
+                        checkAnswer: (val) => val === 'ЕДИНСТВО'
+                    },
+                    {
+                        id: 'c1c5',
+                        type: 'cipher',
+                        title: 'ПОРЯДОК БУКВ',
+                        description: 'Расставьте буквы: Р,А,Г,А,Н,Ф → ?',
+                        checkAnswer: (val) => val.toUpperCase() === 'ФАРАГАН',
+                        hint: 'Начните с последней буквы'
+                    }
+                ],
+                DELTA: [
+                    {
+                        id: 'c1d1',
+                        type: 'riddle',
+                        title: 'ЗАГАДКА МИНОТАВРА',
+                        description: 'Агент 4: Что это?',
+                        riddle: 'Я всегда иду, но никогда не прихожу. У меня есть рот, но не говорю. Что я?',
+                        checkAnswer: (val) => ['РЕКА', 'РЕКА'].includes(val.toUpperCase()),
+                        hint: 'Течёт к морю',
+                        player: 4
+                    },
+                    {
+                        id: 'c1d2',
+                        type: 'team_equations',
+                        title: 'МАТЕМАТИЧЕСКИЙ КОД',
+                        description: 'Каждый агент решает своё уравнение. Соедините ответы в код.',
+                        teamId: 4,
+                        checkAnswer: (val) => val === '41048',
+                        hint: 'Запишите ответы по порядку агентов: 1-2-3-4'
+                    },
+                    {
+                        id: 'c1d3',
+                        type: 'scan',
+                        title: 'МЕТКА В ЛАБИРИНТЕ',
+                        description: 'На стене лабиринта',
+                        code: 'DELTA_MARK_1',
+                        hint: 'На стене лабиринта',
+                        checkAnswer: (val) => val === 'DELTA_MARK_1'
+                    },
+                    {
+                        id: 'c1d4',
+                        type: 'wordsearch',
+                        title: 'СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 7x7, соединяя буквы по порядку',
+                        hint: 'Ищите слово по горизонтали',
+                        teamId: 4,
+                        checkAnswer: (val) => val === 'СОДРУЖЕСТВО'
+                    },
+                    {
+                        id: 'c1d5',
+                        type: 'cipher',
+                        title: 'ЗЕРКАЛЬНЫЙ ШИФР',
+                        description: 'А ↔ Я, К ↔ С, М ↔ Т... Расшифруйте: КЯМ',
+                        checkAnswer: (val) => val.toUpperCase() === 'САН',
+                        hint: 'Зеркальное отражение алфавита'
+                    }
+                ],
+                ECHO: [
+                    {
+                        id: 'c1e1',
+                        type: 'riddle',
+                        title: 'ЗАГАДКА ОРАКУЛА',
+                        description: 'Все агенты: Что это?',
+                        riddle: 'Чем больше из неё берёшь, тем больше она становится. Что это?',
+                        checkAnswer: (val) => ['ЯМА', 'ЯМА', 'НОРА'].includes(val.toUpperCase()),
+                        hint: 'Копают в земле'
+                    },
+                    {
+                        id: 'c1e2',
+                        type: 'team_equations',
+                        title: 'МАТЕМАТИЧЕСКИЙ КОД',
+                        description: 'Каждый агент решает своё уравнение. Соедините ответы в код.',
+                        teamId: 5,
+                        checkAnswer: (val) => val === '279714',
+                        hint: 'Запишите ответы по порядку агентов: 1-2-3-4'
+                    },
+                    {
+                        id: 'c1e3',
+                        type: 'scan',
+                        title: 'СВИТОК ОРАКУЛА',
+                        description: 'В урне у статуи',
+                        code: 'ECHO_SCROLL_1',
+                        hint: 'В урне у статуи',
+                        checkAnswer: (val) => val === 'ECHO_SCROLL_1'
+                    },
+                    {
+                        id: 'c1e4',
+                        type: 'wordsearch',
+                        title: 'СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 7x7, соединяя буквы по порядку',
+                        hint: 'Ищите слово по горизонтали',
+                        teamId: 5,
+                        checkAnswer: (val) => val === 'БРАТСТВО'
+                    },
+                    {
+                        id: 'c1e5',
+                        type: 'cipher',
+                        title: 'ЧИСЛОВОЙ КОД',
+                        description: 'А=1, Б=2... Расшифруйте: 4-1-18',
+                        checkAnswer: (val) => val.toUpperCase() === 'ДАР',
+                        hint: '4=Д, 1=А, 18=Р'
+                    }
+                ]
+            },
+            
+            // ЭТАП 2: СЛУЖБА БЕЗОПАСНОСТИ
+            chapter2: {
+                ALFA: [
+                    {
+                        id: 'c2a1',
+                        type: 'riddle',
+                        title: 'КАМЕРА НАБЛЮДЕНИЯ',
+                        description: 'Агент 2: Что это?',
+                        riddle: 'Я вижу всё, но у меня нет глаз. Я записываю всё, но не могу говорить. Что я?',
+                        checkAnswer: (val) => ['КАМЕРА', 'ВИДЕОКАМЕРА'].includes(val.toUpperCase()),
+                        hint: 'Снимает видео',
+                        player: 2
+                    },
+                    {
+                        id: 'c2a2',
+                        type: 'team_binary',
+                        title: 'БИНАРНЫЙ КОД ДОСТУПА',
+                        description: 'Соедините все группы',
+                        binary: ['1010', '0101', '1100', '0011'],
+                        checkAnswer: (val) => val === '1010010111000011',
+                        hint: 'Соедините все группы'
+                    },
+                    {
+                        id: 'c2a3',
+                        type: 'scan',
+                        title: 'ДИСК ДОСТУПА',
+                        description: 'На мониторе охраны',
+                        code: 'ALFA_SEC_2',
+                        hint: 'На мониторе охраны',
+                        checkAnswer: (val) => val === 'ALFA_SEC_2'
+                    },
+                    {
+                        id: 'c2a4',
+                        type: 'wordsearch20x20', // Сетка 20x20 для 4-го задания
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 1,
+                        checkAnswer: (val) => val === 'ДРУЖБА'
+                    },
+                    {
+                        id: 'c2a5',
+                        type: 'cipher',
+                        title: 'ШИФР ВИЖЕНЕРА',
+                        description: 'Ключ: МУЗЕЙ. Расшифруйте: ЫГОЩ',
+                        checkAnswer: (val) => val.toUpperCase() === 'КОДЫ',
+                        hint: 'Используйте таблицу Виженера'
+                    }
+                ],
+                BRAVO: [
+                    {
+                        id: 'c2b1',
+                        type: 'riddle',
+                        title: 'СЕЙФ',
+                        description: 'Агент 1: Что это?',
+                        riddle: 'У меня есть зубы, но я не кусаю. Что я?',
+                        checkAnswer: (val) => ['КЛЮЧ', 'КЛЮЧ'].includes(val.toUpperCase()),
+                        hint: 'Открывает замки',
+                        player: 1
+                    },
+                    {
+                        id: 'c2b2',
+                        type: 'team_code',
+                        title: 'ПИН-КОД',
+                        description: 'Запомните свою цифру',
+                        digits: ['9', '3', '6', '1'],
+                        checkAnswer: (val) => val === '9361',
+                        hint: 'Запомните свою цифру'
+                    },
+                    {
+                        id: 'c2b3',
+                        type: 'scan',
+                        title: 'ДВЕРЬ СЕЙФА',
+                        description: 'На двери сейфа',
+                        code: 'BRAVO_SAFE_2',
+                        hint: 'На двери сейфа',
+                        checkAnswer: (val) => val === 'BRAVO_SAFE_2'
+                    },
+                    {
+                        id: 'c2b4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 2,
+                        checkAnswer: (val) => val === 'ТОВАРИЩ'
+                    },
+                    {
+                        id: 'c2b5',
+                        type: 'cipher',
+                        title: 'ОБРАТНЫЙ АЛФАВИТ',
+                        description: 'Я ↔ А, Ю ↔ Б... Расшифруйте: ЯЮС',
+                        checkAnswer: (val) => val.toUpperCase() === 'АБГ',
+                        hint: 'Алфавит задом наперёд'
+                    }
+                ],
+                CHARLIE: [
+                    {
+                        id: 'c2c1',
+                        type: 'riddle',
+                        title: 'СИГНАЛИЗАЦИЯ',
+                        description: 'Агент 3: Что это?',
+                        riddle: 'Я кричу без голоса, предупреждаю без слов. Что я?',
+                        checkAnswer: (val) => ['СИРЕНА', 'СИРЕНА', 'ТРЕВОГА'].includes(val.toUpperCase()),
+                        hint: 'Громкий звуковой сигнал',
+                        player: 3
+                    },
+                    {
+                        id: 'c2c2',
+                        type: 'team_morse',
+                        title: 'СИГНАЛ ТРЕВОГИ',
+                        description: 'Международный сигнал бедствия',
+                        morse: ['...', '---', '...'],
+                        checkAnswer: (val) => val.toUpperCase() === 'SOS',
+                        hint: 'Международный сигнал бедствия'
+                    },
+                    {
+                        id: 'c2c3',
+                        type: 'scan',
+                        title: 'ПАНЕЛЬ ТРЕВОГ',
+                        description: 'На панели тревог',
+                        code: 'CHARLIE_ALERT_2',
+                        hint: 'На панели тревог',
+                        checkAnswer: (val) => val === 'CHARLIE_ALERT_2'
+                    },
+                    {
+                        id: 'c2c4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 3,
+                        checkAnswer: (val) => val === 'ЕДИНСТВО'
+                    },
+                    {
+                        id: 'c2c5',
+                        type: 'cipher',
+                        title: 'ПОЛИБИЙСКИЙ КВАДРАТ',
+                        description: 'Расшифруйте координаты: 11 42 23',
+                        checkAnswer: (val) => val.toUpperCase() === 'АКД',
+                        hint: 'Таблица 5x5 с буквами'
+                    }
+                ],
+                DELTA: [
+                    {
+                        id: 'c2d1',
+                        type: 'riddle',
+                        title: 'ДАТЧИК ДВИЖЕНИЯ',
+                        description: 'Агент 4: Что это?',
+                        riddle: 'Я сплю, но вижу. Я молчу, но слышу. Что я?',
+                        checkAnswer: (val) => ['ДАТЧИК', 'СЕНСОР'].includes(val.toUpperCase()),
+                        hint: 'Реагирует на движение',
+                        player: 4
+                    },
+                    {
+                        id: 'c2d2',
+                        type: 'team_shape',
+                        title: 'ГЕОМЕТРИЧЕСКИЙ КЛЮЧ',
+                        description: 'Опишите фигуры по порядку',
+                        shapes: ['КРУГ', 'КВАДРАТ', 'ТРЕУГОЛЬНИК', 'РОМБ'],
+                        checkAnswer: (val) => val.toUpperCase() === 'КРУГ-КВАДРАТ-ТРЕУГОЛЬНИК-РОМБ',
+                        hint: 'Опишите фигуры по порядку'
+                    },
+                    {
+                        id: 'c2d3',
+                        type: 'scan',
+                        title: 'ДАТЧИК У ДВЕРИ',
+                        description: 'На датчике у двери',
+                        code: 'DELTA_SENS_2',
+                        hint: 'На датчике у двери',
+                        checkAnswer: (val) => val === 'DELTA_SENS_2'
+                    },
+                    {
+                        id: 'c2d4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 4,
+                        checkAnswer: (val) => val === 'СОДРУЖЕСТВО'
+                    },
+                    {
+                        id: 'c2d5',
+                        type: 'cipher',
+                        title: 'СДВИГ ЦЕЗАРЯ',
+                        description: 'Сдвиг +3. Расшифруйте: ЕЛУБ',
+                        checkAnswer: (val) => val.toUpperCase() === 'БИРЖ',
+                        hint: 'Сдвиньте каждую букву на 3 назад'
+                    }
+                ],
+                ECHO: [
+                    {
+                        id: 'c2e1',
+                        type: 'riddle',
+                        title: 'ЖУРНАЛ ПОСЕЩЕНИЙ',
+                        description: 'Агент 1: Что это?',
+                        riddle: 'Я помню всё, что было, но не могу вспомнить сам. Что я?',
+                        checkAnswer: (val) => ['АРХИВ', 'ЖУРНАЛ', 'БАЗА'].includes(val.toUpperCase()),
+                        hint: 'Хранилище информации',
+                        player: 1
+                    },
+                    {
+                        id: 'c2e2',
+                        type: 'team_rhythm',
+                        title: 'СТУК В ТРУБЕ',
+                        description: 'Посчитайте удары',
+                        rhythm: ['ТУК', 'ТУК-ТУК', 'ТУК-ТУК-ТУК', 'ТУК'],
+                        checkAnswer: (val) => val === '1-2-3-1',
+                        hint: 'Посчитайте удары'
+                    },
+                    {
+                        id: 'c2e3',
+                        type: 'scan',
+                        title: 'ЖУРНАЛ РЕГИСТРАЦИИ',
+                        description: 'В журнале регистрации',
+                        code: 'ECHO_LOG_2',
+                        hint: 'В журнале регистрации',
+                        checkAnswer: (val) => val === 'ECHO_LOG_2'
+                    },
+                    {
+                        id: 'c2e4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 5,
+                        checkAnswer: (val) => val === 'БРАТСТВО'
+                    },
+                    {
+                        id: 'c2e5',
+                        type: 'cipher',
+                        title: 'АНАГРАММА',
+                        description: 'Переставьте: КАРТИНА',
+                        checkAnswer: (val) => val.toUpperCase() === 'ТАРАНКИ',
+                        hint: 'Насекомые в картине?'
+                    }
+                ]
+            },
+            
+            // ЭТАП 3: ГАЛЕРЕЯ ЭКСПОНАТОВ
+            chapter3: {
+                ALFA: [
+                    {
+                        id: 'c3a1',
+                        type: 'riddle',
+                        title: 'КАРТИНА',
+                        description: 'Агент 3: Что это?',
+                        riddle: 'Я плачу без слёз, улыбаюсь без уст. Что я?',
+                        checkAnswer: (val) => ['МАСКА', 'ЛИЦО', 'КАРТИНА'].includes(val.toUpperCase()),
+                        hint: 'Висит в раме',
+                        player: 3
+                    },
+                    {
+                        id: 'c3a2',
+                        type: 'team_art',
+                        title: 'ЦВЕТА КАРТИНЫ',
+                        description: 'Художественные краски',
+                        colors: ['ЗОЛОТО', 'УЛЬТРАМАРИН', 'ОХРА', 'БЕЛИЛА'],
+                        checkAnswer: (val) => val.toUpperCase() === 'ЗОЛОТО-УЛЬТРАМАРИН-ОХРА-БЕЛИЛА',
+                        hint: 'Художественные краски'
+                    },
+                    {
+                        id: 'c3a3',
+                        type: 'scan',
+                        title: 'ОБОРОТ КАРТИНЫ',
+                        description: 'На обороте картины',
+                        code: 'ALFA_ART_3',
+                        hint: 'На обороте картины',
+                        checkAnswer: (val) => val === 'ALFA_ART_3'
+                    },
+                    {
+                        id: 'c3a4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 1,
+                        checkAnswer: (val) => val === 'ДРУЖБА'
+                    },
+                    {
+                        id: 'c3a5',
+                        type: 'cipher',
+                        title: 'КНИЖНЫЙ ШИФР',
+                        description: 'Страница-Строка-Буква: 12-3-5 8-1-2 15-2-1',
+                        checkAnswer: (val) => val.toUpperCase() === 'КОД',
+                        hint: 'Найдите указанные буквы в книге'
+                    }
+                ],
+                BRAVO: [
+                    {
+                        id: 'c3b1',
+                        type: 'riddle',
+                        title: 'СКУЛЬПТУРА',
+                        description: 'Агент 2: Что это?',
+                        riddle: 'Я создан из камня, но дышу жизнью. Что я?',
+                        checkAnswer: (val) => ['СТАТУЯ', 'СКУЛЬПТУРА'].includes(val.toUpperCase()),
+                        hint: 'Три измерения',
+                        player: 2
+                    },
+                    {
+                        id: 'c3b2',
+                        type: 'team_numbers',
+                        title: 'ДАТА СОЗДАНИЯ',
+                        description: 'Год создания',
+                        digits: ['1', '5', '0', '3'],
+                        checkAnswer: (val) => val === '1503',
+                        hint: 'Год создания'
+                    },
+                    {
+                        id: 'c3b3',
+                        type: 'scan',
+                        title: 'ПОСТАМЕНТ СТАТУИ',
+                        description: 'На постаменте статуи',
+                        code: 'BRAVO_SCULPT_3',
+                        hint: 'На постаменте статуи',
+                        checkAnswer: (val) => val === 'BRAVO_SCULPT_3'
+                    },
+                    {
+                        id: 'c3b4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 2,
+                        checkAnswer: (val) => val === 'ТОВАРИЩ'
+                    },
+                    {
+                        id: 'c3b5',
+                        type: 'cipher',
+                        title: 'РОТОРНАЯ МАШИНА',
+                        description: 'Расшифруйте: ЛГПЕР (роторы: 3-1-2)',
+                        checkAnswer: (val) => val.toUpperCase() === 'ЕНИГМА',
+                        hint: 'Немецкая шифровальная машина'
+                    }
+                ],
+                CHARLIE: [
+                    {
+                        id: 'c3c1',
+                        type: 'riddle',
+                        title: 'ВАЗА',
+                        description: 'Агент 4: Что это?',
+                        riddle: 'Я красива снаружи, пуста внутри. Что я?',
+                        checkAnswer: (val) => ['ВАЗА', 'СОСУД', 'АМФОРА'].includes(val.toUpperCase()),
+                        hint: 'Древнегреческий сосуд',
+                        player: 4
+                    },
+                    {
+                        id: 'c3c2',
+                        type: 'team_directions',
+                        title: 'ПУТЬ К ЭКСПОНАТУ',
+                        description: 'Следуйте стрелкам',
+                        directions: ['ПРЯМО', 'НАЛЕВО', 'ПРЯМО', 'НАПРАВО'],
+                        checkAnswer: (val) => val.toUpperCase() === 'ПРЯМО-НАЛЕВО-ПРЯМО-НАПРАВО',
+                        hint: 'Следуйте стрелкам'
+                    },
+                    {
+                        id: 'c3c3',
+                        type: 'scan',
+                        title: 'ДНО ВАЗЫ',
+                        description: 'Дно вазы',
+                        code: 'CHARLIE_VASE_3',
+                        hint: 'Дно вазы',
+                        checkAnswer: (val) => val === 'CHARLIE_VASE_3'
+                    },
+                    {
+                        id: 'c3c4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 3,
+                        checkAnswer: (val) => val === 'ЕДИНСТВО'
+                    },
+                    {
+                        id: 'c3c5',
+                        type: 'cipher',
+                        title: 'ЛИНЕЙКА ЦЕЗАРЯ',
+                        description: 'Сдвиг +7. Расшифруйте: ШЧГЛ',
+                        checkAnswer: (val) => val.toUpperCase() === 'ПАТРОН',
+                        hint: 'Сдвиньте на 7 назад'
+                    }
+                ],
+                DELTA: [
+                    {
+                        id: 'c3d1',
+                        type: 'riddle',
+                        title: 'МОЗАИКА',
+                        description: 'Агент 1: Что это?',
+                        riddle: 'Я сломана на тысячи кусков, но целостна. Что я?',
+                        checkAnswer: (val) => ['МОЗАИКА', 'ПАННО'].includes(val.toUpperCase()),
+                        hint: 'Картина из камней',
+                        player: 1
+                    },
+                    {
+                        id: 'c3d2',
+                        type: 'team_symbols',
+                        title: 'СИМВОЛЫ ЭПОХИ',
+                        description: 'Небесные тела',
+                        symbols: ['☀️', '🌙', '⭐', '⚡'],
+                        checkAnswer: (val) => val.toUpperCase() === 'СОЛНЦЕ-ЛУНА-ЗВЕЗДА-МОЛНИЯ',
+                        hint: 'Небесные тела'
+                    },
+                    {
+                        id: 'c3d3',
+                        type: 'scan',
+                        title: 'ЦЕНТР МОЗАИКИ',
+                        description: 'В центре мозаики',
+                        code: 'DELTA_MOSAIC_3',
+                        hint: 'В центре мозаики',
+                        checkAnswer: (val) => val === 'DELTA_MOSAIC_3'
+                    },
+                    {
+                        id: 'c3d4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 4,
+                        checkAnswer: (val) => val === 'СОДРУЖЕСТВО'
+                    },
+                    {
+                        id: 'c3d5',
+                        type: 'cipher',
+                        title: 'ТРАНСПОЗИЦИЯ',
+                        description: 'Переставьте буквы: МАРИОНЕТКА → ?',
+                        checkAnswer: (val) => val.toUpperCase() === 'НЕТРАМЕТОКА',
+                        hint: 'Новое слово из тех же букв'
+                    }
+                ],
+                ECHO: [
+                    {
+                        id: 'c3e1',
+                        type: 'riddle',
+                        title: 'ГОБЕЛЕН',
+                        description: 'Агент 3: Что это?',
+                        riddle: 'Я рассказываю историю без слов, тканый рассказ. Что я?',
+                        checkAnswer: (val) => ['ГОБЕЛЕН', 'КОВЁР', 'ТКАНЬ'].includes(val.toUpperCase()),
+                        hint: 'Настенное полотно',
+                        player: 3
+                    },
+                    {
+                        id: 'c3e2',
+                        type: 'team_memory',
+                        title: 'СЮЖЕТ ГОБЕЛЕНА',
+                        description: 'Средневековая сцена',
+                        questions: [
+                            { q: 'Кто на коне?', a: 'РЫЦАРЬ', player: 1 },
+                            { q: 'Что в руке?', a: 'КОПЬЕ', player: 2 },
+                            { q: 'Цвет коня?', a: 'БЕЛЫЙ', player: 3 },
+                            { q: 'Фон?', a: 'ЗАМОК', player: 4 }
+                        ],
+                        checkAnswer: (answers) => {
+                            const correct = ['РЫЦАРЬ', 'КОПЬЕ', 'БЕЛЫЙ', 'ЗАМОК'];
+                            return answers.every((a, i) => a.toUpperCase() === correct[i]);
+                        },
+                        hint: 'Средневековая сцена'
+                    },
+                    {
+                        id: 'c3e3',
+                        type: 'scan',
+                        title: 'ЗА ГОБЕЛЕНОМ',
+                        description: 'За гобеленом',
+                        code: 'ECHO_TAPESTRY_3',
+                        hint: 'За гобеленом',
+                        checkAnswer: (val) => val === 'ECHO_TAPESTRY_3'
+                    },
+                    {
+                        id: 'c3e4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 5,
+                        checkAnswer: (val) => val === 'БРАТСТВО'
+                    },
+                    {
+                        id: 'c3e5',
+                        type: 'cipher',
+                        title: 'БЕЙКОНОВСКИЙ ШИФР',
+                        description: 'A=AAAAA, B=AAAAB... Расшифруйте: AABAA AABAB',
+                        checkAnswer: (val) => val.toUpperCase() === 'БИ',
+                        hint: 'Двоичный код Бэкона'
+                    }
+                ]
+            },
+            
+            // ЭТАП 4: ПОДВАЛЬНЫЕ ПОМЕЩЕНИЯ
+            chapter4: {
+                ALFA: [
+                    {
+                        id: 'c4a1',
+                        type: 'riddle',
+                        title: 'ЛЮК',
+                        description: 'Агент 1: Что это?',
+                        riddle: 'Я открываю путь вниз, но сам всегда наверху. Что я?',
+                        checkAnswer: (val) => ['ЛЮК', 'ДВЕРЬ', 'ЛЕСТНИЦА'].includes(val.toUpperCase()),
+                        hint: 'В полу или потолке',
+                        player: 1
+                    },
+                    {
+                        id: 'c4a2',
+                        type: 'team_code',
+                        title: 'КОД ЛЮКА',
+                        description: 'Тяжёлый металл',
+                        digits: ['5', '8', '2', '7'],
+                        checkAnswer: (val) => val === '5827',
+                        hint: 'Тяжёлый металл'
+                    },
+                    {
+                        id: 'c4a3',
+                        type: 'scan',
+                        title: 'КРЫШКА ЛЮКА',
+                        description: 'На крышке люка',
+                        code: 'ALFA_HATCH_4',
+                        hint: 'На крышке люка',
+                        checkAnswer: (val) => val === 'ALFA_HATCH_4'
+                    },
+                    {
+                        id: 'c4a4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 1,
+                        checkAnswer: (val) => val === 'ДРУЖБА'
+                    },
+                    {
+                        id: 'c4a5',
+                        type: 'cipher',
+                        title: 'ШИФР ГРОНСФЕЛЬДА',
+                        description: 'Ключ: 123. Расшифруйте: ДЖЕ',
+                        checkAnswer: (val) => val.toUpperCase() === 'БЕГ',
+                        hint: 'Сдвиг по цифрам ключа'
+                    }
+                ],
+                BRAVO: [
+                    {
+                        id: 'c4b1',
+                        type: 'riddle',
+                        title: 'ТРУБА',
+                        description: 'Агент 2: Что это?',
+                        riddle: 'Я тянусь от пола до потолка, но не стена. Что я?',
+                        checkAnswer: (val) => ['ТРУБА', 'ТРУБОПРОВОД'].includes(val.toUpperCase()),
+                        hint: 'Внутри течёт вода или пар',
+                        player: 2
+                    },
+                    {
+                        id: 'c4b2',
+                        type: 'team_binary',
+                        title: 'КОД ТРУБЫ',
+                        description: 'Двоичная система',
+                        binary: ['1101', '0011', '1010', '0111'],
+                        checkAnswer: (val) => val === '1101001110100111',
+                        hint: 'Двоичная система'
+                    },
+                    {
+                        id: 'c4b3',
+                        type: 'scan',
+                        title: 'ТРУБА ОТОПЛЕНИЯ',
+                        description: 'На трубе отопления',
+                        code: 'BRAVO_PIPE_4',
+                        hint: 'На трубе отопления',
+                        checkAnswer: (val) => val === 'BRAVO_PIPE_4'
+                    },
+                    {
+                        id: 'c4b4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 2,
+                        checkAnswer: (val) => val === 'ТОВАРИЩ'
+                    },
+                    {
+                        id: 'c4b5',
+                        type: 'cipher',
+                        title: 'ШИфр ХИЛЛА',
+                        description: 'Матрица 2x2. Расшифруйте: БГ → ?',
+                        checkAnswer: (val) => val.toUpperCase() === 'АД',
+                        hint: 'Матричное шифрование'
+                    }
+                ],
+                CHARLIE: [
+                    {
+                        id: 'c4c1',
+                        type: 'riddle',
+                        title: 'КИРПИЧНАЯ СТЕНА',
+                        description: 'Агент 3: Что это?',
+                        riddle: 'Я построена из красных блоков, но не дом. Что я?',
+                        checkAnswer: (val) => ['СТЕНА', 'КЛАДЬ', 'ПОГРЕБ'].includes(val.toUpperCase()),
+                        hint: 'Подземная стена',
+                        player: 3
+                    },
+                    {
+                        id: 'c4c2',
+                        type: 'team_morse',
+                        title: 'СИГНАЛ ИЗ ТЕМНОТЫ',
+                        description: 'Помощь по-английски',
+                        morse: ['....', '.', '.-..', '.--.'],
+                        checkAnswer: (val) => val.toUpperCase() === 'HELP',
+                        hint: 'Помощь по-английски'
+                    },
+                    {
+                        id: 'c4c3',
+                        type: 'scan',
+                        title: 'В СТЕНЕ ПОДВАЛА',
+                        description: 'В стене подвала',
+                        code: 'CHARLIE_WALL_4',
+                        hint: 'В стене подвала',
+                        checkAnswer: (val) => val === 'CHARLIE_WALL_4'
+                    },
+                    {
+                        id: 'c4c4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 3,
+                        checkAnswer: (val) => val === 'ЕДИНСТВО'
+                    },
+                    {
+                        id: 'c4c5',
+                        type: 'cipher',
+                        title: 'АФФИННЫЙ ШИФР',
+                        description: '3x+7. Расшифруйте: К (11 буква)',
+                        checkAnswer: (val) => val.toUpperCase() === 'А',
+                        hint: 'Обратная функция: (y-7)/3'
+                    }
+                ],
+                DELTA: [
+                    {
+                        id: 'c4d1',
+                        type: 'riddle',
+                        title: 'ПОТОЛОЧНАЯ БАЛКА',
+                        description: 'Агент 4: Что это?',
+                        riddle: 'Я держу всё на себе, но не видна снизу. Что я?',
+                        checkAnswer: (val) => ['БАЛКА', 'ПЕРЕКРЫТИЕ'].includes(val.toUpperCase()),
+                        hint: 'Горизонтальная опора',
+                        player: 4
+                    },
+                    {
+                        id: 'c4d2',
+                        type: 'team_directions',
+                        title: 'ПУТЬ К ВЫХОДУ',
+                        description: 'Обратный путь',
+                        directions: ['НАПРАВО', 'ПРЯМО', 'НАЛЕВО', 'ПРЯМО'],
+                        checkAnswer: (val) => val.toUpperCase() === 'НАПРАВО-ПРЯМО-НАЛЕВО-ПРЯМО',
+                        hint: 'Обратный путь'
+                    },
+                    {
+                        id: 'c4d3',
+                        type: 'scan',
+                        title: 'ЗАПАСНОЙ ВЫХОД',
+                        description: 'У запасного выхода',
+                        code: 'DELTA_EXIT_4',
+                        hint: 'У запасного выхода',
+                        checkAnswer: (val) => val === 'DELTA_EXIT_4'
+                    },
+                    {
+                        id: 'c4d4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 4,
+                        checkAnswer: (val) => val === 'СОДРУЖЕСТВО'
+                    },
+                    {
+                        id: 'c4d5',
+                        type: 'cipher',
+                        title: 'ШИФР ПЛЕЙФЕРА',
+                        description: 'Ключ: МУЗЕЙ. Расшифруйте: АРТУ',
+                        checkAnswer: (val) => val.toUpperCase() === 'КОДЫ',
+                        hint: 'По таблице 5x5'
+                    }
+                ],
+                ECHO: [
+                    {
+                        id: 'c4e1',
+                        type: 'riddle',
+                        title: 'СТАРЫЙ СЕЙФ',
+                        description: 'Агент 1: Что это?',
+                        riddle: 'Я храню сокровища за толстыми стенками. Что я?',
+                        checkAnswer: (val) => ['СЕЙФ', 'ХРАНИЛИЩЕ'].includes(val.toUpperCase()),
+                        hint: 'Металлический шкаф',
+                        player: 1
+                    },
+                    {
+                        id: 'c4e2',
+                        type: 'team_rhythm',
+                        title: 'СТУК В ТРУБЕ',
+                        description: 'Простая последовательность',
+                        rhythm: ['ТУК', 'ТУК-ТУК', 'ТУК-ТУК-ТУК', 'ТУК-ТУК-ТУК-ТУК'],
+                        checkAnswer: (val) => val === '1-2-3-4',
+                        hint: 'Простая последовательность'
+                    },
+                    {
+                        id: 'c4e3',
+                        type: 'scan',
+                        title: 'ДВЕРЬ СЕЙФА',
+                        description: 'На двери сейфа',
+                        code: 'ECHO_VAULT_4',
+                        hint: 'На двери сейфа',
+                        checkAnswer: (val) => val === 'ECHO_VAULT_4'
+                    },
+                    {
+                        id: 'c4e4',
+                        type: 'wordsearch20x20',
+                        title: 'БОЛЬШАЯ СЕТКА БУКВ',
+                        description: 'Найдите слово на сетке 20x20 (ищите по диагонали)',
+                        hint: 'Слово спрятано по диагонали',
+                        teamId: 5,
+                        checkAnswer: (val) => val === 'БРАТСТВО'
+                    },
+                    {
+                        id: 'c4e5',
+                        type: 'cipher',
+                        title: 'ШИФР ВЕРНАМА',
+                        description: 'XOR с ключом 1010. Расшифруйте: 0110',
+                        checkAnswer: (val) => val === '1100',
+                        hint: 'Побитовое исключающее ИЛИ'
+                    }
+                ]
+            },
+            
+            // ЭТАП 5: ФИНАЛ - только анаграмма, нет заданий
+            chapter5: {
+                ALFA: [],
+                BRAVO: [],
+                CHARLIE: [],
+                DELTA: [],
+                ECHO: []
+            }
+        };
+        
+        let currentMode = null;
+        let myRoom = null;
+        let myTeam = null;
+        let myTeamId = null;
+        let currentChapter = 0;
+        let currentEvidenceIndex = 0;
+        let qrScanner = null;
+        let currentEvidence = null;
+        let isAnswerChecked = false;
+        let isScanning = false;
+        let teamProgress = {
+            completedChapters: []
+        };
+        let completedChapters = [];
+
+        // ==================== INITIALIZATION ====================
+        
+        function startMode(mode) {
+            if (!initFB()) return;
+            currentMode = mode;
+            document.getElementById('mode-select').classList.add('hidden');
+            
+            if (mode === 'teacher') {
+                document.getElementById('teacher-panel').classList.remove('hidden');
+                initTeacher();
+            } else {
+                document.getElementById('team-panel').classList.remove('hidden');
+            }
+        }
+
+        // ==================== TEACHER FUNCTIONS ====================
+        
+        function initTeacher() {
+            const existing = localStorage.getItem('museum_case');
+            if (existing) {
+                myRoom = existing;
+                document.getElementById('room-code').textContent = myRoom;
+                connectTeacher(myRoom);
+            }
+        }
+        
+        function createRoom() {
+            myRoom = Math.floor(1000 + Math.random() * 9000).toString();
+            localStorage.setItem('museum_case', myRoom);
+            document.getElementById('room-code').textContent = myRoom;
+            
+            gameRef = db.ref('museumCases/' + myRoom);
+            
+            gameRef.set({
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                chapter: 0,
+                started: false,
+                ended: false,
+                timeLeft: 1200, // 20 minutes
+                teams: {}
+            }).then(() => {
+                connectTeacher(myRoom);
+                generateQRCodes();
+            }).catch(err => {
+                alert('Ошибка: ' + err.message);
+            });
+        }
+        
+        function deleteRoom() {
+            if (myRoom && confirm('Закрыть дело?')) {
+                db.ref('museumCases/' + myRoom).remove();
+                localStorage.removeItem('museum_case');
+                location.reload();
+            }
+        }
+        
+        function connectTeacher(room) {
+            gameRef = db.ref('museumCases/' + room);
+            
+            gameRef.on('value', (snap) => {
+                const data = snap.val();
+                if (!data) return;
+                
+                const teams = data.teams || {};
+                document.getElementById('stat-teams').textContent = Object.keys(teams).length;
+                document.getElementById('stat-phase').textContent = (data.chapter || 0) + '/5';
+                
+                const mins = Math.floor((data.timeLeft || 0) / 60);
+                const secs = (data.timeLeft || 0) % 60;
+                document.getElementById('stat-time').textContent =
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                const startBtn = document.getElementById('btn-start');
+                if (Object.keys(teams).length > 0 && !data.started) {
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else if (data.started) {
+                    startBtn.textContent = '🔍 РАССЛЕДОВАНИЕ АКТИВНО';
+                    startBtn.disabled = true;
+                }
+                
+                renderTeamsList(teams);
+            });
+            
+            startGlobalTimer();
+        }
+        
+        function startGlobalTimer() {
+            if (globalTimerInterval) clearInterval(globalTimerInterval);
+            
+            globalTimerInterval = setInterval(() => {
+                if (!gameRef) return;
+                
+                gameRef.once('value').then(snap => {
+                    const data = snap.val();
+                    if (data && data.started && !data.ended && data.timeLeft > 0) {
+                        gameRef.update({ timeLeft: data.timeLeft - 1 });
+                    }
+                });
+            }, 1000);
+        }
+        
+        function renderTeamsList(teams) {
+            const list = document.getElementById('teams-list');
+            
+            if (Object.keys(teams).length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 py-8 italic">Нет подключённых групп</div>';
+                return;
+            }
+            
+            list.innerHTML = Object.entries(teams).map(([id, team]) => {
+                const info = TEAMS.find(t => t.id == id);
+                const progress = team.progress || 0;
+                const maxProgress = 25; // 5 этапов по 5 заданий
+                
+                return `
+                    <div class="bg-black/40 rounded-lg p-4 border border-[#d4af37]/30 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                             style="background: ${info.color}20; border: 2px solid ${info.color}">
+                            ${info.emoji}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-bold text-[#d4af37] font-title">${info.name}</div>
+                            <div class="text-xs text-gray-400 mb-2">${(team.players || []).join(', ')}</div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-[#d4af37] to-[#8b0000]"
+                                     style="width: ${(progress/maxProgress)*100}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold" style="color: ${info.color}">${team.chapter || 0}</div>
+                            <div class="text-xs text-gray-500">этап</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function startGame() {
+            if (!gameRef) return;
+            
+            gameRef.update({
+                chapter: 1,
+                started: true,
+                startedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+        
+        function forcePhase(chapter) {
+            if (!gameRef) return;
+            gameRef.update({ chapter: chapter });
+        }
+
+        // Generate QR codes for printing
+        function generateQRCodes() {
+            const container = document.getElementById('qr-codes-container');
+            container.innerHTML = '';
+            
+            const allCodes = [];
+            
+            // Collect all QR codes from evidence
+            for (let chapter = 1; chapter <= 4; chapter++) {
+                const chapterKey = 'chapter' + chapter;
+                const chapterData = EVIDENCE[chapterKey];
+                
+                Object.keys(chapterData).forEach(teamName => {
+                    chapterData[teamName].forEach(evidence => {
+                        if (evidence.code) {
+                            allCodes.push({
+                                team: teamName,
+                                chapter: chapter,
+                                code: evidence.code,
+                                title: evidence.title
+                            });
+                        }
+                    });
+                });
+            }
+            
+            if (allCodes.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400">Нет QR-кодов для отображения</p>';
+                return;
+            }
+            
+            // Generate QR codes using QRCode.js
+            allCodes.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'qr-card';
+                card.innerHTML = `
+                    <div id="qrcode-${index}" class="qr-code-container"></div>
+                    <div class="team-name">${item.team}</div>
+                    <div class="chapter-num">Этап ${item.chapter}</div>
+                    <div class="evidence-title">${item.title}</div>
+                `;
+                container.appendChild(card);
+                
+                // Generate QR code
+                setTimeout(() => {
+                    new QRCode(document.getElementById(`qrcode-${index}`), {
+                        text: item.code,
+                        width: 128,
+                        height: 128,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }, 100);
+            });
+        }
+        
+        function printQRCodes() {
+            const container = document.getElementById('qr-codes-container');
+            if (!container || container.children.length === 0) {
+                alert('Сначала создайте дело!');
+                return;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            const codes = container.innerHTML;
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>QR-коды для печати - Музейная тайна</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            background: #f5f5f5;
+                        }
+                        h1 {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            color: #1a1a2e;
+                            font-family: 'Cinzel', serif;
+                        }
+                        .qr-display {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 20px;
+                        }
+                        .qr-card {
+                            background: white;
+                            border: 3px solid #d4af37;
+                            padding: 15px;
+                            text-align: center;
+                            page-break-inside: avoid;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        }
+                        .qr-code-container {
+                            width: 128px;
+                            height: 128px;
+                            margin: 0 auto 10px;
+                        }
+                        .qr-code-container img {
+                            width: 100% !important;
+                            height: 100% !important;
+                        }
+                        .team-name {
+                            font-weight: bold;
+                            font-size: 14px;
+                            color: #1a1a2e;
+                            margin-bottom: 5px;
+                            text-transform: uppercase;
+                        }
+                        .chapter-num {
+                            font-size: 12px;
+                            color: #666;
+                            margin-bottom: 5px;
+                        }
+                        .evidence-title {
+                            font-size: 11px;
+                            color: #8b0000;
+                            font-weight: bold;
+                        }
+                        .print-info {
+                            text-align: center;
+                            margin-top: 30px;
+                            padding: 20px;
+                            background: #1a1a2e;
+                            color: #d4af37;
+                            border-radius: 8px;
+                        }
+                        @media print {
+                            body { background: white; }
+                            .no-print { display: none !important; }
+                            .qr-display { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+                            .qr-card { break-inside: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>🔍 QR-коды для игры "Музейная тайна"</h1>
+                    <div class="qr-display">${codes}</div>
+                    <div class="print-info no-print">
+                        <p><strong>Инструкция:</strong> Распечатайте эту страницу и разместите QR-коды в соответствующих локациях музея.</p>
+                        <p>Каждая команда видит только свои QR-коды в приложении.</p>
+                        <button onclick="window.print()" style="margin-top: 15px; padding: 10px 30px; background: #d4af37; color: #1a1a2e; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🖨️ Печать</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }
+
+        // ==================== TEAM FUNCTIONS ====================
+        
+        function selectTeam(num) {
+            myTeamId = num;
+            document.querySelectorAll('.team-btn').forEach(b => {
+                b.style.opacity = '0.4';
+                b.style.transform = 'scale(0.95)';
+            });
+            
+            const selected = document.querySelector(`[data-t="${num}"]`);
+            selected.style.opacity = '1';
+            selected.style.transform = 'scale(1.05)';
+            selected.style.borderWidth = '3px';
+        }
+        
+        function joinGame() {
+            const code = document.getElementById('join-code').value.trim();
+            const err = document.getElementById('join-err');
+            
+            if (!code || code.length !== 4) {
+                err.textContent = 'Введите 4-значный номер дела';
+                err.classList.remove('hidden');
+                return;
+            }
+            if (!myTeamId) {
+                err.textContent = 'Выберите оперативную группу';
+                err.classList.remove('hidden');
+                return;
+            }
+            
+            const players = [
+                document.getElementById('p1').value.trim(),
+                document.getElementById('p2').value.trim(),
+                document.getElementById('p3').value.trim(),
+                document.getElementById('p4').value.trim()
+            ].filter(p => p);
+            
+            if (players.length < 2) {
+                err.textContent = 'Минимум 2 агента';
+                err.classList.remove('hidden');
+                return;
+            }
+            
+            db.ref('museumCases/' + code).once('value').then(snap => {
+                if (!snap.exists()) {
+                    err.textContent = 'Дело не найдено в архиве';
+                    err.classList.remove('hidden');
+                    return;
+                }
+                
+                const caseData = snap.val();
+                if (caseData.teams && caseData.teams[myTeamId]) {
+                    err.textContent = 'Группа уже в деле';
+                    err.classList.remove('hidden');
+                    return;
+                }
+                
+                myRoom = code;
+                myTeam = TEAMS.find(t => t.id === myTeamId);
+                gameRef = db.ref('museumCases/' + code);
+                
+                return gameRef.child('teams/' + myTeamId).set({
+                    players: players,
+                    joinedAt: firebase.database.ServerValue.TIMESTAMP,
+                    chapter: 0,
+                    currentEvidence: 0,
+                    progress: 0,
+                    completedEvidence: {},
+                    completedChapters: []
+                });
+                
+            }).then(() => {
+                document.getElementById('team-connect').classList.add('hidden');
+                document.getElementById('team-wait').classList.remove('hidden');
+                
+                document.getElementById('wait-team-emoji').textContent = myTeam.emoji;
+                document.getElementById('wait-team-name').textContent = myTeam.name;
+                document.getElementById('wait-team-name').style.color = myTeam.color;
+                
+                document.getElementById('wait-players').innerHTML = players.map((p, i) => `
+                    <div class="flex items-center gap-3 p-2 bg-black/40 rounded border border-[#d4af37]/20">
+                        <div class="player-role">${i+1}</div>
+                        <span>${p}</span>
+                    </div>
+                `).join('');
+                
+                waitForStart();
+                
+            }).catch(e => {
+                err.textContent = 'Ошибка: ' + e.message;
+                err.classList.remove('hidden');
+            });
+        }
+        
+        function waitForStart() {
+            gameRef.on('value', snap => {
+                const data = snap.val();
+                if (!data) return;
+                
+                // Когда игра начинается, запоминаем время начала для локального таймера
+                if (data.started && !gameStartTime) {
+                    gameStartTime = Date.now();
+                    // Запускаем независимый локальный таймер
+                    startLocalTimer();
+                }
+                
+                if (data.chapter > 0 && currentChapter === 0) {
+                    currentChapter = data.chapter;
+                    startTeamGame();
+                }
+                
+                if (data.teams && data.teams[myTeamId]) {
+                    const myData = data.teams[myTeamId];
+                    
+                    if (myData.chapter !== currentChapter) {
+                        currentChapter = myData.chapter || 1;
+                        loadChapter(currentChapter);
+                    }
+                    
+                    if (myData.currentEvidence !== undefined && myData.currentEvidence !== currentEvidenceIndex) {
+                        currentEvidenceIndex = myData.currentEvidence;
+                        updateEvidenceBoard();
+                    }
+                    
+                    // Обновляем список пройденных этапов
+                    if (myData.completedChapters) {
+                        completedChapters = myData.completedChapters;
+                        updatePhaseButtons(completedChapters);
+                    }
+                }
+            });
+        }
+        
+        function updateTimerDisplay() {
+            const mins = Math.floor(localTimeLeft / 60);
+            const secs = localTimeLeft % 60;
+            const timerEl = document.getElementById('game-timer');
+            if (timerEl) {
+                timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Обновление прогресс-бара
+            const maxEvidence = 5;
+            const totalEvidence = 20; // 4 этапа по 5 заданий
+            const completedEvidence = ((currentChapter - 1) * maxEvidence + currentEvidenceIndex);
+            const progress = (completedEvidence / totalEvidence) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+        
+        function startTeamGame() {
+            document.getElementById('team-wait').classList.add('hidden');
+            document.getElementById('team-game').classList.remove('hidden');
+            
+            document.getElementById('game-team-name').textContent = myTeam.name;
+            document.getElementById('game-team-name').style.color = myTeam.color;
+            
+            // Если таймер еще не запущен, запускаем
+            if (!localTimerInterval) {
+                startLocalTimer();
+            }
+            
+            loadChapter(1);
+        }
+        
+        function startLocalTimer() {
+            // Очищаем предыдущий интервал
+            if (localTimerInterval) clearInterval(localTimerInterval);
+            
+            lastTimerUpdate = Date.now();
+            
+            localTimerInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = Math.floor((now - lastTimerUpdate) / 1000);
+                
+                if (elapsed >= 1) {
+                    localTimeLeft = Math.max(0, localTimeLeft - elapsed);
+                    lastTimerUpdate = now;
+                    updateTimerDisplay();
+                    
+                    // Если время вышло
+                    if (localTimeLeft <= 0) {
+                        clearInterval(localTimerInterval);
+                        alert('Время вышло! Расследование не завершено.');
+                    }
+                }
+            }, 1000);
+        }
+        
+        function loadChapter(chapterNum) {
+            currentChapter = chapterNum;
+            const chapter = CHAPTERS[chapterNum - 1];
+            
+            document.body.className = `min-h-screen ${chapter.theme}`;
+            
+            document.getElementById('game-phase-num').textContent =
+                ['I', 'II', 'III', 'IV', 'V'][chapterNum - 1];
+            document.getElementById('phase-icon').textContent = chapter.icon;
+            document.getElementById('phase-title').textContent = chapter.title;
+            document.getElementById('phase-subtitle').textContent = chapter.subtitle;
+            
+            // Если это 5-й этап, показываем финальную анаграмму
+            if (chapterNum === 5) {
+                showFinalAnagram();
+            } else {
+                gameRef.child('teams/' + myTeamId).once('value').then(snap => {
+                    const teamData = snap.val();
+                    if (teamData) {
+                        currentEvidenceIndex = teamData.currentEvidence || 0;
+                        updateEvidenceBoard();
+                    }
+                });
+            }
+        }
+        
+        function switchPhase(phaseNum) {
+            // Проверяем, можно ли перейти на этот этап
+            if (phaseNum === 5) {
+                // Проверяем, пройдены ли все предыдущие этапы
+                const allPrevCompleted = completedChapters.includes(1) &&
+                                         completedChapters.includes(2) &&
+                                         completedChapters.includes(3) &&
+                                         completedChapters.includes(4);
+                
+                if (!allPrevCompleted) {
+                    alert('Сначала пройдите все этапы 1-4!');
+                    return;
+                }
+            }
+            
+            if (phaseNum > currentChapter + 1 && phaseNum !== 5) return;
+            
+            loadChapter(phaseNum);
+            
+            document.querySelectorAll('.phase-btn').forEach((btn, idx) => {
+                if (idx + 1 === phaseNum) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        function updatePhaseButtons(completedChaptersList) {
+            completedChapters = completedChaptersList || [];
+            
+            // Проверяем, пройдены ли все этапы 1-4
+            const allPrevCompleted = completedChapters.includes(1) &&
+                                     completedChapters.includes(2) &&
+                                     completedChapters.includes(3) &&
+                                     completedChapters.includes(4);
+            
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`phase${i}-btn`);
+                if (btn) {
+                    // Сбрасываем классы
+                    btn.classList.remove('completed', 'active', 'locked');
+                    btn.disabled = false;
+                    
+                    if (completedChapters.includes(i)) {
+                        btn.classList.add('completed');
+                    }
+                    
+                    if (i === currentChapter) {
+                        btn.classList.add('active');
+                    }
+                    
+                    // Для 5-го этапа: блокируем если не пройдены 1-4
+                    if (i === 5) {
+                        if (!allPrevCompleted) {
+                            btn.classList.add('locked');
+                            btn.disabled = true;
+                            btn.title = "Сначала пройдите все этапы 1-4";
+                        } else {
+                            btn.title = "Финальный этап доступен";
+                        }
+                    }
+                }
+            }
+        }
+        
+        function updateEvidenceBoard() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+            
+            const chapterKey = 'chapter' + currentChapter;
+            const teamName = myTeam.name;
+            const evidenceList = EVIDENCE[chapterKey][teamName] || [];
+            
+            // Если список улик пуст (например, на 5-м этапе), ничего не показываем
+            if (evidenceList.length === 0) {
+                return;
+            }
+            
+            evidenceList.forEach((evidence, index) => {
+                const isLocked = index > currentEvidenceIndex;
+                const isActive = index === currentEvidenceIndex;
+                const isCompleted = index < currentEvidenceIndex;
+                
+                const card = document.createElement('div');
+                card.className = `case-file rounded-lg p-6 mb-6 relative transition-all duration-500 ${
+                    isLocked ? 'evidence-locked' : ''
+                } ${isActive ? 'evidence-active' : ''} ${isCompleted ? 'card-completed' : ''}`;
+                
+                if (isActive) {
+                    card.onclick = () => openEvidence(evidence);
+                }
+                
+                const playerBadge = evidence.player ?
+                    `<span class="inline-block bg-[#8b0000] text-white text-xs px-2 py-1 rounded ml-2">Агент ${evidence.player}</span>` : '';
+                
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-full bg-[#1a1a2e]/10 flex items-center justify-center text-3xl flex-shrink-0 border-2 border-[#d4af37]/30">
+                            ${isCompleted ? '✓' : isLocked ? '🔒' : getIcon(evidence.type)}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-title font-bold text-lg text-[#1a1a2e]">
+                                    УЛИКА ${index + 1}: ${evidence.title}
+                                    ${playerBadge}
+                                </h4>
+                            </div>
+                            <p class="text-sm text-[#1a1a2e]/70 mb-3">${evidence.description}</p>
+                            ${isCompleted ? '<div class="text-xs text-green-600 font-bold">✓ РАССЛЕДОВАНО</div>' : ''}
+                        </div>
+                    </div>
+                    ${isCompleted ? '<div class="stamp show">РАССЛЕДОВАНО</div>' : ''}
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // Проверяем, все ли улики текущего этапа пройдены
+            if (currentEvidenceIndex >= evidenceList.length) {
+                // Этап завершен - показываем сообщение
+                showChapterComplete();
+            }
+        }
+        
+        function getIcon(type) {
+            const icons = {
+                'riddle': '❓', 'team_equations': '📐', 'team_code': '🔢', 'team_binary': '💻',
+                'team_morse': '📡', 'team_memory': '🧠', 'team_directions': '🧭', 'team_shape': '🔷',
+                'team_symbols': '🔣', 'team_art': '🎭', 'team_numbers': '🔟', 'team_rhythm': '🥁',
+                'scan': '📷', 'puzzle': '🧩', 'cipher': '🔐', 'final': '🏆', 'wordsearch': '🔍',
+                'wordsearch20x20': '🔎'
+            };
+            return icons[type] || '📋';
+        }
+        
+        function openEvidence(evidence) {
+            currentEvidence = evidence;
+            isAnswerChecked = false;
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 modal-overlay z-[150] flex items-center justify-center p-4';
+            modal.id = 'evidence-modal';
+            
+            let content = renderEvidenceContent(evidence);
+            
+            modal.innerHTML = `
+                <div class="case-file rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+                    <button onclick="closeEvidenceModal()" class="absolute top-4 right-4 text-[#1a1a2e] text-2xl hover:text-[#8b0000] transition">✕</button>
+                    
+                    <div class="mb-6">
+                        <div class="text-xs text-[#8b0000] font-bold uppercase tracking-widest mb-2">Улика ${currentEvidenceIndex + 1}</div>
+                        <h3 class="text-2xl font-title font-bold text-[#1a1a2e] mb-2">${evidence.title}</h3>
+                        <p class="text-[#1a1a2e]/70 italic">${evidence.description}</p>
+                    </div>
+                    
+                    <div class="bg-[#1a1a2e]/5 p-6 rounded-lg mb-6 border border-[#1a1a2e]/10">
+                        ${content}
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="showHint('${evidence.hint}')" class="flex-1 btn-secondary-detective text-sm">
+                            💡 ПОДСКАЗКА
+                        </button>
+                        ${evidence.type !== 'scan' && evidence.type !== 'wordsearch' && evidence.type !== 'wordsearch20x20' ? `<button onclick="checkAnswer()" class="flex-1 btn-detective">✓ ПРОВЕРИТЬ</button>` : ''}
+                    </div>
+                    
+                    <div id="hint-box" class="hidden mt-4 p-4 bg-[#d4af37]/20 rounded border border-[#d4af37] text-sm text-[#1a1a2e]"></div>
+                    <div id="error-box" class="hidden mt-4 p-4 bg-[#ff6b6b]/20 rounded border border-[#ff6b6b] text-sm text-[#8b0000] font-bold text-center"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function renderEvidenceContent(evidence) {
+            switch(evidence.type) {
+                case 'riddle':
+                    return `
+                        <div class="riddle-box mb-4">${evidence.riddle}</div>
+                        <input type="text" id="answer-input" class="detective-input" placeholder="Ваш ответ...">
+                    `;
+                    
+                case 'team_equations':
+                    const equations = generateEquations(evidence.teamId);
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                ${equations.map((eq, i) => `
+                                    <div class="bg-[#1a1a2e] text-[#d4af37] p-4 rounded text-center border-2 border-[#d4af37]">
+                                        <div class="text-lg font-mono mb-2">${eq.eq}</div>
+                                        <div class="text-xs text-gray-400">Агент ${i+1}</div>
+                                        <div class="text-sm text-[#4ade80] mt-1">Ответ: ${eq.ans}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <p class="text-sm text-[#1a1a2e]/70 mb-4">Соедините все ответы в один код</p>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Введите код из 4 чисел...">
+                        </div>
+                    `;
+                    
+                case 'cipher':
+                    return `
+                        <div class="riddle-box mb-4 font-mono text-lg">${evidence.description}</div>
+                        <input type="text" id="answer-input" class="detective-input" placeholder="Расшифрованное слово...">
+                    `;
+                    
+                case 'team_code':
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="grid grid-cols-4 gap-4 mb-4">
+                                ${evidence.digits.map((d, i) => `
+                                    <div class="bg-[#1a1a2e] text-[#d4af37] p-4 rounded text-2xl font-bold font-mono border-2 border-[#d4af37]">
+                                        ${d}
+                                        <div class="text-xs mt-1 text-gray-400">Агент ${i+1}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Введите код целиком...">
+                        </div>
+                    `;
+                    
+                case 'team_colors':
+                case 'team_directions':
+                case 'team_shape':
+                case 'team_symbols':
+                case 'team_art':
+                case 'team_numbers':
+                    const items = evidence.colors || evidence.directions || evidence.shapes || evidence.symbols || evidence.colors || evidence.digits;
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="grid grid-cols-${items.length} gap-3 mb-4">
+                                ${items.map((item, i) => `
+                                    <div class="bg-[#1a1a2e] text-[#d4af37] p-4 rounded text-center border-2 border-[#d4af37]">
+                                        <div class="text-2xl mb-1">${item}</div>
+                                        <div class="text-xs text-gray-400">Агент ${i+1}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Соедините через дефис...">
+                        </div>
+                    `;
+                    
+                case 'team_binary':
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="grid grid-cols-4 gap-3 mb-4">
+                                ${evidence.binary.map((b, i) => `
+                                    <div class="bg-[#1a1a2e] text-[#4ade80] p-4 rounded text-center border-2 border-[#d4af37] font-mono">
+                                        <div class="text-lg">${b}</div>
+                                        <div class="text-xs text-gray-400">Агент ${i+1}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Соедините все группы...">
+                        </div>
+                    `;
+                    
+                case 'team_morse':
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="text-4xl mb-4 font-mono text-[#d4af37]">${evidence.morse.join(' ')}</div>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Расшифруйте Морзе...">
+                        </div>
+                    `;
+                    
+                case 'team_rhythm':
+                    return `
+                        <div class="text-center mb-6">
+                            <div class="riddle-box mb-4">
+                                ${evidence.rhythm.join(' - ')}
+                            </div>
+                            <input type="text" id="answer-input" class="detective-input" placeholder="Ваш ответ...">
+                        </div>
+                    `;
+                    
+                case 'team_memory':
+                    return `
+                        <div class="text-center">
+                            <div class="grid grid-cols-2 gap-3">
+                                ${evidence.questions.map((q, i) => `
+                                    <div class="p-3 bg-white rounded border border-[#d4af37]/30">
+                                        <div class="text-xs text-[#1a1a2e]/60 mb-1">Агент ${q.player}</div>
+                                        <div class="text-sm font-bold mb-2">${q.q}</div>
+                                        <input type="text" id="mem-answer-${i}" class="w-full p-2 border border-[#d4af37] rounded text-sm" placeholder="Ответ...">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                case 'scan':
+                    return `
+                        <div class="text-center">
+                            <div class="w-32 h-32 mx-auto mb-4 rounded-full bg-[#1a1a2e]/10 flex items-center justify-center text-6xl border-4 border-[#d4af37]">
+                                📷
+                            </div>
+                            <p class="mb-4 text-[#1a1a2e]/70">${evidence.hint}</p>
+                            <button onclick="startQRScanner('${evidence.code}')" class="btn-detective w-full">
+                                ОТКРЫТЬ СКАНЕР
+                            </button>
+                        </div>
+                    `;
+                    
+                case 'puzzle':
+                    return `
+                        <div class="text-center">
+                            <div class="grid grid-cols-2 gap-4 mb-6 max-w-xs mx-auto">
+                                ${[1,2,3,4].map(i => `
+                                    <div class="puzzle-piece" id="puzzle-${i}" onclick="rotatePuzzle(${i})">
+                                        ${i}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <p class="text-sm text-[#1a1a2e]/60 mb-4">Нажимайте, чтобы поворачивать</p>
+                            <button onclick="completePuzzle()" class="btn-detective text-sm">ГОТОВО</button>
+                            <input type="hidden" id="answer-input" value="puzzle">
+                        </div>
+                    `;
+
+                case 'wordsearch':
+                    const wordData = generateWordSearch(evidence.teamId);
+                    const grid = wordData.grid;
+                    
+                    let gridHtml = '<div class="word-grid">';
+                    for (let row = 0; row < 7; row++) {
+                        for (let col = 0; col < 7; col++) {
+                            gridHtml += `<div class="grid-cell" data-row="${row}" data-col="${col}" onclick="selectGridCell(${row}, ${col})">${grid[row][col]}</div>`;
+                        }
+                    }
+                    gridHtml += '</div>';
+                    
+                    return `
+                        <div class="text-center">
+                            <p class="mb-4 text-[#1a1a2e]">Найдите слово на сетке, соединяя буквы по порядку</p>
+                            ${gridHtml}
+                            <div class="mt-4">
+                                <div class="selected-word" id="selected-word"></div>
+                            </div>
+                            <div class="flex gap-4 mt-4">
+                                <button onclick="clearWordSelection()" class="btn-secondary-detective text-sm">ОЧИСТИТЬ</button>
+                                <button onclick="checkWordSearch('${wordData.word}')" class="btn-detective text-sm">ПРОВЕРИТЬ</button>
+                            </div>
+                            <input type="hidden" id="answer-input">
+                        </div>
+                    `;
+
+                case 'wordsearch20x20':
+                    const wordData20x20 = generateWordSearch20x20(evidence.teamId);
+                    const grid20x20 = wordData20x20.grid;
+                    
+                    let gridHtml20x20 = '<div class="word-grid-20x20" id="word-grid-20x20">';
+                    // Добавляем SVG overlay для линий
+                    gridHtml20x20 += '<svg class="word-line-overlay" id="word-line-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">';
+                    gridHtml20x20 += '<line id="selection-line" class="word-line" x1="0" y1="0" x2="0" y2="0" />';
+                    gridHtml20x20 += '</svg>';
+                    
+                    for (let row = 0; row < 20; row++) {
+                        for (let col = 0; col < 20; col++) {
+                            gridHtml20x20 += `<div class="grid-cell-20x20" data-row="${row}" data-col="${col}" onclick="selectGridCell20x20(${row}, ${col})">${grid20x20[row][col]}</div>`;
+                        }
+                    }
+                    gridHtml20x20 += '</div>';
+                    
+                    return `
+                        <div class="text-center">
+                            <p class="mb-4 text-[#1a1a2e]">Найдите слово на сетке 20x20 (ищите по диагонали!)</p>
+                            <p class="mb-2 text-sm text-[#8b0000]">Соединяйте буквы непрерывной линией</p>
+                            ${gridHtml20x20}
+                            <div class="mt-4">
+                                <div class="selected-word-20x20" id="selected-word-20x20"></div>
+                            </div>
+                            <div class="flex gap-4 mt-4">
+                                <button onclick="clearWordSelection20x20()" class="btn-secondary-detective text-sm">ОЧИСТИТЬ</button>
+                                <button onclick="checkWordSearch20x20('${wordData20x20.word}')" class="btn-detective text-sm">ПРОВЕРИТЬ</button>
+                            </div>
+                            <input type="hidden" id="answer-input">
+                        </div>
+                    `;
+                    
+                case 'final':
+                    return `<div class="text-center text-[#8b0000] font-bold">Перейдите к финальной анаграмме</div>`;
+                    
+                default:
+                    return `<div class="text-center">${evidence.description}</div>`;
+            }
+        }
+
+        // Функции для сетки 7x7
+        let selectedCells = [];
+
+        function selectGridCell(row, col) {
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            
+            const existingIndex = selectedCells.findIndex(c => c.row === row && c.col === col);
+            
+            if (existingIndex !== -1) {
+                if (existingIndex === selectedCells.length - 1) {
+                    selectedCells.pop();
+                    cell.classList.remove('selected');
+                }
+            } else {
+                selectedCells.push({ row, col, letter: cell.textContent });
+                cell.classList.add('selected');
+            }
+            
+            updateSelectedWord();
+        }
+
+        function updateSelectedWord() {
+            const word = selectedCells.map(c => c.letter).join('');
+            document.getElementById('selected-word').textContent = word;
+        }
+
+        function clearWordSelection() {
+            selectedCells.forEach(cell => {
+                const el = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+                if (el) el.classList.remove('selected');
+            });
+            selectedCells = [];
+            updateSelectedWord();
+        }
+
+        function checkWordSearch(correctWord) {
+            const word = selectedCells.map(c => c.letter).join('');
+            
+            if (word === correctWord) {
+                closeEvidenceModal();
+                completeEvidence(true);
+            } else {
+                showError('Неверное слово! Попробуйте ещё раз.');
+                clearWordSelection();
+            }
+        }
+
+        // Функции для сетки 20x20 с диагональным выделением и линией
+        let selectedCells20x20 = [];
+        let isDragging20x20 = false;
+        let startCell20x20 = null;
+
+        function selectGridCell20x20(row, col) {
+            const cell = document.querySelector(`#word-grid-20x20 [data-row="${row}"][data-col="${col}"]`);
+            
+            // Если выбираем первую ячейку
+            if (selectedCells20x20.length === 0) {
+                selectedCells20x20.push({ row, col, letter: cell.textContent });
+                cell.classList.add('selected');
+                startCell20x20 = { row, col };
+                updateSelectedWord20x20();
+                return;
+            }
+            
+            // Проверяем, можно ли добавить эту ячейку (должна быть смежной с последней)
+            const last = selectedCells20x20[selectedCells20x20.length - 1];
+            const rowDiff = row - last.row;
+            const colDiff = col - last.col;
+            
+            // Проверяем, что ячейка смежная (по горизонтали, вертикали или диагонали)
+            if (Math.abs(rowDiff) > 1 || Math.abs(colDiff) > 1) {
+                showError('Можно соединять только соседние клетки!');
+                return;
+            }
+            
+            // Проверяем, не выбрана ли уже эта ячейка
+            const existingIndex = selectedCells20x20.findIndex(c => c.row === row && c.col === col);
+            
+            if (existingIndex !== -1) {
+                // Если ячейка уже выбрана, проверяем, можно ли её удалить
+                if (existingIndex === selectedCells20x20.length - 1) {
+                    selectedCells20x20.pop();
+                    cell.classList.remove('selected');
+                }
+            } else {
+                selectedCells20x20.push({ row, col, letter: cell.textContent });
+                cell.classList.add('selected');
+            }
+            
+            updateSelectedWord20x20();
+            updateSelectionLine20x20();
+        }
+
+        function updateSelectedWord20x20() {
+            const word = selectedCells20x20.map(c => c.letter).join('');
+            document.getElementById('selected-word-20x20').textContent = word;
+        }
+
+        function updateSelectionLine20x20() {
+            const line = document.getElementById('selection-line');
+            if (!line || selectedCells20x20.length < 2) {
+                if (line) line.classList.remove('show');
+                return;
+            }
+            
+            const first = selectedCells20x20[0];
+            const last = selectedCells20x20[selectedCells20x20.length - 1];
+            
+            // Вычисляем процентные координаты для SVG
+            const grid = document.getElementById('word-grid-20x20');
+            if (!grid) return;
+            
+            const cellSize = 100 / 20; // 20 ячеек в строке
+            
+            const x1 = (first.col * cellSize) + (cellSize / 2);
+            const y1 = (first.row * cellSize) + (cellSize / 2);
+            const x2 = (last.col * cellSize) + (cellSize / 2);
+            const y2 = (last.row * cellSize) + (cellSize / 2);
+            
+            line.setAttribute('x1', x1 + '%');
+            line.setAttribute('y1', y1 + '%');
+            line.setAttribute('x2', x2 + '%');
+            line.setAttribute('y2', y2 + '%');
+            line.classList.add('show');
+        }
+
+        function clearWordSelection20x20() {
+            selectedCells20x20.forEach(cell => {
+                const el = document.querySelector(`#word-grid-20x20 [data-row="${cell.row}"][data-col="${cell.col}"]`);
+                if (el) el.classList.remove('selected');
+            });
+            selectedCells20x20 = [];
+            updateSelectedWord20x20();
+            
+            const line = document.getElementById('selection-line');
+            if (line) line.classList.remove('show');
+        }
+
+        function checkWordSearch20x20(correctWord) {
+            const word = selectedCells20x20.map(c => c.letter).join('');
+            
+            if (word === correctWord) {
+                closeEvidenceModal();
+                completeEvidence(true);
+            } else {
+                showError('Неверное слово! Попробуйте ещё раз.');
+                clearWordSelection20x20();
+            }
+        }
+        
+        function rotatePuzzle(id) {
+            const piece = document.getElementById(`puzzle-${id}`);
+            const currentRot = piece.style.transform || 'rotate(0deg)';
+            const newRot = parseInt(currentRot.replace(/[^0-9-]/g, '')) + 90;
+            piece.style.transform = `rotate(${newRot}deg)`;
+        }
+        
+        function completePuzzle() {
+            closeEvidenceModal();
+            completeEvidence(true);
+        }
+        
+        function startQRScanner(expectedCode) {
+            document.getElementById('qr-modal').classList.remove('hidden');
+            document.getElementById('qr-scanner-status').innerHTML = '🔍 Ожидание сканирования...';
+            
+            if (isScanning) return;
+            isScanning = true;
+            
+            if (!qrScanner) {
+                qrScanner = new Html5Qrcode("qr-reader");
+            }
+            
+            const qrConfig = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                rememberLastUsedCamera: true,
+                aspectRatio: 1.0
+            };
+            
+            qrScanner.start(
+                { facingMode: "environment" },
+                qrConfig,
+                (decodedText) => {
+                    if (decodedText === expectedCode) {
+                        document.getElementById('qr-scanner-status').innerHTML = '✅ Код верен! Улика найдена!';
+                        
+                        qrScanner.stop().then(() => {
+                            isScanning = false;
+                            setTimeout(() => {
+                                closeQR();
+                                closeEvidenceModal();
+                                completeEvidence(true);
+                            }, 1000);
+                        }).catch(() => {
+                            isScanning = false;
+                        });
+                    } else {
+                        document.getElementById('qr-scanner-status').innerHTML = '❌ Неверный QR-код! Попробуйте другой.';
+                        // Используем pause/resume вместо stop/start
+                        qrScanner.pause();
+                        setTimeout(() => {
+                            qrScanner.resume();
+                            document.getElementById('qr-scanner-status').innerHTML = '🔍 Сканируйте снова...';
+                        }, 2000);
+                    }
+                },
+                (error) => {
+                    if (!error.includes('NotFoundException')) {
+                        console.log('QR Scan error:', error);
+                    }
+                }
+            ).catch(err => {
+                console.error('QR Scanner start error:', err);
+                isScanning = false;
+                closeQR();
+                
+                const code = prompt('Камера недоступна. Введите код вручную:');
+                if (code === expectedCode) {
+                    closeEvidenceModal();
+                    completeEvidence(true);
+                } else if (code) {
+                    alert('Неверный код!');
+                }
+            });
+        }
+        
+        function closeQR() {
+            document.getElementById('qr-modal').classList.add('hidden');
+            if (qrScanner && isScanning) {
+                qrScanner.stop().catch(() => {});
+                isScanning = false;
+            }
+        }
+        
+        function closeEvidenceModal() {
+            const modal = document.getElementById('evidence-modal');
+            if (modal) modal.remove();
+        }
+        
+        function showHint(hint) {
+            const box = document.getElementById('hint-box');
+            box.textContent = '💡 ' + hint;
+            box.classList.remove('hidden');
+        }
+        
+        function showError(msg) {
+            const box = document.getElementById('error-box');
+            box.textContent = '❌ ' + msg;
+            box.classList.remove('hidden');
+            setTimeout(() => box.classList.add('hidden'), 3000);
+        }
+        
+        function checkAnswer() {
+            if (!currentEvidence) return;
+            if (isAnswerChecked) return;
+            
+            let userAnswer;
+            
+            if (currentEvidence.type === 'team_memory') {
+                const answers = [];
+                for (let i = 0; i < currentEvidence.questions.length; i++) {
+                    const val = document.getElementById(`mem-answer-${i}`)?.value;
+                    if (!val || val.trim() === '') {
+                        showError('Все агенты должны ответить!');
+                        return;
+                    }
+                    answers.push(val);
+                }
+                userAnswer = answers;
+            } else {
+                const input = document.getElementById('answer-input');
+                if (!input) {
+                    if (currentEvidence.type === 'puzzle') return;
+                    showError('Ошибка ввода!');
+                    return;
+                }
+                userAnswer = input.value.trim();
+                if (!userAnswer && currentEvidence.type !== 'puzzle') {
+                    showError('Введите ответ!');
+                    return;
+                }
+            }
+            
+            const isCorrect = currentEvidence.checkAnswer(userAnswer);
+            
+            if (isCorrect) {
+                isAnswerChecked = true;
+                closeEvidenceModal();
+                completeEvidence(true);
+            } else {
+                showError('Неверный ответ! Попробуйте ещё раз.');
+                const modal = document.getElementById('evidence-modal');
+                if (modal) modal.classList.add('shake');
+                setTimeout(() => modal?.classList.remove('shake'), 500);
+            }
+        }
+        
+        function completeEvidence(success) {
+            if (!gameRef) return;
+            
+            gameRef.child('teams/' + myTeamId).transaction(teamData => {
+                if (!teamData) return teamData;
+                
+                if (currentEvidenceIndex === (teamData.currentEvidence || 0)) {
+                    teamData.currentEvidence = (teamData.currentEvidence || 0) + 1;
+                    teamData.progress = (teamData.progress || 0) + (success ? 1 : 0);
+                }
+                
+                if (!teamData.completedEvidence) teamData.completedEvidence = {};
+                teamData.completedEvidence[currentEvidenceIndex] = success;
+                
+                return teamData;
+            }).then(() => {
+                // После успешного обновления, проверяем, не завершен ли этап
+                const chapterKey = 'chapter' + currentChapter;
+                const teamName = myTeam.name;
+                const evidenceList = EVIDENCE[chapterKey][teamName] || [];
+                
+                // Если все улики этапа пройдены, отмечаем этап как завершенный
+                if (currentEvidenceIndex + 1 >= evidenceList.length) {
+                    markChapterComplete();
+                }
+            });
+        }
+        
+        function markChapterComplete() {
+            if (!gameRef) return;
+            
+            gameRef.child('teams/' + myTeamId).transaction(teamData => {
+                if (!teamData) return teamData;
+                
+                if (!teamData.completedChapters) teamData.completedChapters = [];
+                
+                // Добавляем текущий этап в список пройденных, если его еще нет
+                if (!teamData.completedChapters.includes(currentChapter)) {
+                    teamData.completedChapters.push(currentChapter);
+                }
+                
+                // Переходим к следующему этапу только если это не 4-й этап
+                // (4-й этап переходит в 5-й только вручную или при выполнении условий)
+                if (currentChapter < 4) {
+                    teamData.chapter = currentChapter + 1;
+                    teamData.currentEvidence = 0;
+                }
+                
+                return teamData;
+            }).then(() => {
+                // Обновляем UI
+                showChapterComplete();
+            });
+        }
+        
+        function showChapterComplete() {
+            const container = document.getElementById('cards-container');
+            
+            // Проверяем, не показано ли уже сообщение о завершении
+            if (document.getElementById('chapter-complete-message')) return;
+            
+            const div = document.createElement('div');
+            div.id = 'chapter-complete-message';
+            div.className = 'case-file rounded-lg p-8 text-center mt-4';
+            div.innerHTML = `
+                <div class="text-6xl mb-4">📁</div>
+                <h3 class="text-2xl font-title font-bold text-[#1a1a2e] mb-4">ЭТАП ${currentChapter} ЗАВЕРШЁН</h3>
+                <p class="text-[#1a1a2e]/70 mb-6">Все улики собраны.</p>
+                ${currentChapter < 4 ? `
+                    <button onclick="goToNextChapter()" class="btn-detective mb-4">
+                        ПЕРЕЙТИ К ЭТАПУ ${currentChapter + 1} →
+                    </button>
+                ` : currentChapter === 4 ? `
+                    <p class="text-sm text-[#8b0000] animate-pulse mb-4">Все этапы пройдены! Можно открыть финальный сейф (этап 5).</p>
+                    <button onclick="goToFinalChapter()" class="btn-detective">
+                        ОТКРЫТЬ ФИНАЛЬНЫЙ СЕЙФ 🔐
+                    </button>
+                ` : ''}
+            `;
+            
+            container.appendChild(div);
+        }
+        
+        function goToNextChapter() {
+            const nextChapter = currentChapter + 1;
+            
+            gameRef.child('teams/' + myTeamId).update({
+                chapter: nextChapter,
+                currentEvidence: 0
+            }).then(() => {
+                loadChapter(nextChapter);
+            });
+        }
+        
+        function goToFinalChapter() {
+            // Проверяем, пройдены ли все этапы 1-4
+            const allPrevCompleted = completedChapters.includes(1) &&
+                                     completedChapters.includes(2) &&
+                                     completedChapters.includes(3) &&
+                                     completedChapters.includes(4);
+            
+            if (!allPrevCompleted) {
+                alert('Сначала пройдите все этапы 1-4!');
+                return;
+            }
+            
+            gameRef.child('teams/' + myTeamId).update({
+                chapter: 5,
+                currentEvidence: 0
+            }).then(() => {
+                loadChapter(5);
+            });
+        }
+        
+        function showFinalAnagram() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+            
+            const letters = myTeam.letters.split('');
+            // Перемешиваем буквы для анаграммы
+            const shuffledLetters = [...letters].sort(() => Math.random() - 0.5);
+            
+            const div = document.createElement('div');
+            div.className = 'case-file rounded-lg p-8';
+            div.innerHTML = `
+                <div class="text-center mb-8">
+                    <div class="text-6xl mb-4">🔐</div>
+                    <h3 class="text-3xl font-title font-bold text-[#1a1a2e] mb-2">ФИНАЛЬНЫЙ КОД</h3>
+                    <p class="text-[#1a1a2e]/70 mb-4">Соберите кодовое слово из букв</p>
+                    <p class="text-sm text-[#8b0000] italic">"${myTeam.hint}"</p>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-3 mb-8">
+                    ${shuffledLetters.map((l, i) => `
+                        <button onclick="pickLetter('${l}', ${i})" id="letter-${i}"
+                                class="anagram-tile">
+                            ${l}
+                        </button>
+                    `).join('')}
+                </div>
+                
+                <div class="bg-[#1a1a2e]/5 rounded-lg p-6 mb-6 border-2 border-[#d4af37]">
+                    <div class="text-xs text-[#1a1a2e]/60 uppercase mb-2 tracking-widest">Ваш код:</div>
+                    <div id="word-display" class="text-4xl font-mono font-bold text-[#1a1a2e] tracking-[0.3em] text-center min-h-[60px]"></div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button onclick="clearWord()" class="flex-1 btn-secondary-detective">↺ СБРОС</button>
+                    <button onclick="checkFinalAnagram()" class="flex-1 btn-detective">🔓 ОТПЕРЕТЬ</button>
+                </div>
+                
+                <div id="final-error" class="hidden mt-4 p-4 bg-[#ff6b6b]/20 rounded border border-[#ff6b6b] text-[#8b0000] text-center font-bold"></div>
+            `;
+            
+            container.appendChild(div);
+            
+            window.anagramState = {
+                available: shuffledLetters.map((l, i) => ({ letter: l, index: i })),
+                selected: []
+            };
+        }
+        
+        function pickLetter(letter, index) {
+            const state = window.anagramState;
+            const availableIndex = state.available.findIndex(a => a.index === index);
+            if (availableIndex === -1) return;
+            
+            state.selected.push(state.available[availableIndex]);
+            state.available.splice(availableIndex, 1);
+            
+            document.getElementById(`letter-${index}`).classList.add('used');
+            
+            updateWordDisplay();
+        }
+        
+        function updateWordDisplay() {
+            const word = window.anagramState.selected.map(s => s.letter).join('');
+            document.getElementById('word-display').textContent = word;
+        }
+        
+        function clearWord() {
+            const state = window.anagramState;
+            state.selected.forEach(s => {
+                document.getElementById(`letter-${s.index}`).classList.remove('used');
+            });
+            state.available = [...state.selected, ...state.available].sort((a, b) => a.index - b.index);
+            state.selected = [];
+            updateWordDisplay();
+            document.getElementById('final-error').classList.add('hidden');
+        }
+        
+        function checkFinalAnagram() {
+            const word = window.anagramState.selected.map(s => s.letter).join('');
+            
+            const finalEvidence = {
+                checkAnswer: (val) => val === myTeam.anagram
+            };
+            
+            if (finalEvidence.checkAnswer(word)) {
+                gameRef.child('teams/' + myTeamId).update({
+                    finished: true,
+                    finishedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                showVictory();
+            } else {
+                const err = document.getElementById('final-error');
+                err.textContent = '❌ Неверное кодовое слово!';
+                err.classList.remove('hidden');
+                
+                const display = document.getElementById('word-display');
+                display.style.color = '#8b0000';
+                setTimeout(() => display.style.color = '', 600);
+            }
+        }
+        
+        function showVictory() {
+            document.getElementById('victory-modal').classList.remove('hidden');
+            document.getElementById('vic-team').textContent = myTeam.name;
+            document.getElementById('vic-team').style.color = myTeam.color;
+            document.getElementById('vic-word').textContent = myTeam.anagram;
+            
+            if (localTimerInterval) clearInterval(localTimerInterval);
+        }
+        
+        window.onload = () => {};
+    </script>
+</body>
+</html>
